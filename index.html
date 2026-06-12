@@ -1,1357 +1,761 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GameHub - Chơi Game Trực Tuyến</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0D0F1A;
-    --surface: #151825;
-    --card: #1A1D2E;
-    --card-hover: #1F2338;
-    --accent: #6C63FF;
-    --accent2: #00E5FF;
-    --danger: #FF6B6B;
-    --text: #E8E9F0;
-    --muted: #7B7D8E;
-    --border: rgba(108,99,255,0.2);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* NAVBAR */
-  nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(13,15,26,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 1.5rem;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .nav-logo {
-    font-family: 'Orbitron', monospace;
-    font-weight: 900;
-    font-size: 1.3rem;
-    letter-spacing: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .nav-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .btn {
-    padding: 7px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-  }
-  .btn-primary:hover { background: #7b74ff; transform: translateY(-1px); }
-
-  /* HERO */
-  .hero {
-    position: relative;
-    padding: 4rem 1.5rem 3rem;
-    text-align: center;
-    overflow: hidden;
-  }
-
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(108,99,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .scanlines {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-    pointer-events: none;
-    opacity: 0.4;
-  }
-
-  .hero-badge {
-    display: inline-block;
-    background: rgba(108,99,255,0.15);
-    border: 1px solid rgba(108,99,255,0.35);
-    color: var(--accent2);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 4px 14px;
-    border-radius: 20px;
-    margin-bottom: 1.2rem;
-  }
-
-  .hero h1 {
-    font-family: 'Orbitron', monospace;
-    font-size: clamp(1.8rem, 5vw, 3.5rem);
-    font-weight: 900;
-    line-height: 1.15;
-    margin-bottom: 1rem;
-  }
-
-  .hero h1 span {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .hero p {
-    color: var(--muted);
-    font-size: 1rem;
-    max-width: 480px;
-    margin: 0 auto 2rem;
-    line-height: 1.6;
-  }
-
-  .hero-stats {
-    display: flex;
-    gap: 2rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .stat {
-    text-align: center;
-  }
-  .stat-num {
-    font-family: 'Orbitron', monospace;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--accent2);
-  }
-  .stat-label {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  /* SEARCH & FILTER */
-  .toolbar {
-    padding: 1.5rem 1.5rem 1rem;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .search-box {
-    flex: 1;
-    min-width: 200px;
-    position: relative;
-  }
-
-  .search-box input {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 16px 10px 42px;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .search-box input:focus { border-color: var(--accent); }
-  .search-box input::placeholder { color: var(--muted); }
-
-  .search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    font-size: 16px;
-  }
-
-  .filter-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    padding: 7px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: transparent;
-    font-family: 'Inter', sans-serif;
-  }
-  .tag:hover, .tag.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(108,99,255,0.1);
-  }
-
-  /* GAME GRID */
-  .section-header {
-    padding: 0.5rem 1.5rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .section-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title::before {
-    content: '';
-    width: 3px;
-    height: 18px;
-    background: var(--accent);
-    border-radius: 2px;
-  }
-
-  .game-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    padding: 0 1.5rem 2rem;
-  }
-
-  .game-card {
-    background: var(--card);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.25s;
-    position: relative;
-    group: true;
-  }
-
-  .game-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(108,99,255,0.5);
-    box-shadow: 0 8px 32px rgba(108,99,255,0.2);
-    background: var(--card-hover);
-  }
-
-  .game-thumb {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    display: block;
-    background: var(--surface);
-  }
-
-  .game-thumb-placeholder {
-    width: 100%;
-    aspect-ratio: 16/9;
-    background: linear-gradient(135deg, var(--surface) 0%, var(--card-hover) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    position: relative;
-  }
-
-  .game-card:hover .play-overlay {
-    opacity: 1;
-  }
-
-  .play-overlay {
-    position: absolute;
-    inset: 0;
-    aspect-ratio: 16/9;
-    background: rgba(108,99,255,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .play-btn-big {
-    width: 50px;
-    height: 50px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
-
-  .game-info {
-    padding: 12px 14px;
-  }
-
-  .game-title {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .game-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .game-genre {
-    font-size: 0.72rem;
-    color: var(--accent2);
-    background: rgba(0,229,255,0.1);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-  }
-
-  .game-plays {
-    font-size: 0.72rem;
-    color: var(--muted);
-  }
-
-  /* FEATURED */
-  .featured-card {
-    background: var(--card);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.25s;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    margin: 0 1.5rem 2rem;
-  }
-
-  @media (max-width: 600px) {
-    .featured-card { grid-template-columns: 1fr; }
-  }
-
-  .featured-card:hover {
-    border-color: rgba(108,99,255,0.5);
-    box-shadow: 0 8px 40px rgba(108,99,255,0.25);
-  }
-
-  .featured-thumb {
-    width: 100%;
-    aspect-ratio: 16/10;
-    background: linear-gradient(135deg, #1a1060 0%, #0a2040 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 5rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .featured-thumb::after {
-    content: 'FEATURED';
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: #FFD700;
-    background: rgba(255,215,0,0.15);
-    border: 1px solid rgba(255,215,0,0.4);
-    padding: 3px 10px;
-    border-radius: 4px;
-  }
-
-  .featured-info {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .featured-info h2 {
-    font-family: 'Orbitron', monospace;
-    font-size: 1.2rem;
-    font-weight: 700;
-  }
-
-  .featured-info p {
-    color: var(--muted);
-    font-size: 0.85rem;
-    line-height: 1.6;
-  }
-
-  .featured-info .btn-primary {
-    align-self: flex-start;
-    padding: 10px 22px;
-    font-size: 0.9rem;
-  }
-
-  /* MODAL / GAME PLAYER */
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: rgba(0,0,0,0.95);
-    flex-direction: column;
-  }
-  .modal.open { display: flex; }
-
-  .modal-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    background: #0D0F1A;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .modal-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.9rem;
-    font-weight: 700;
-  }
-
-  .modal-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .icon-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    transition: all 0.2s;
-  }
-  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .game-frame-wrap {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
-
-  #gameFrame {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-  }
-
-  /* ADMIN PANEL */
-  .admin-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    background: rgba(0,0,0,0.8);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .admin-modal.open { display: flex; }
-
-  .admin-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .admin-box h3 {
-    font-family: 'Orbitron', monospace;
-    font-size: 1rem;
-    margin-bottom: 1.2rem;
-    color: var(--accent2);
-  }
-
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
-  .form-group label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus { border-color: var(--accent); }
-  .form-group textarea { resize: vertical; min-height: 80px; }
-  .form-group select option { background: var(--card); }
-
-  .form-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 1.2rem;
-  }
-
-  .emoji-picker {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-top: 6px;
-  }
-  .emoji-opt {
-    aspect-ratio: 1;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    cursor: pointer;
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-  }
-  .emoji-opt:hover, .emoji-opt.selected {
-    border-color: var(--accent);
-    background: rgba(108,99,255,0.15);
-  }
-
-  /* FOOTER */
-  footer {
-    text-align: center;
-    padding: 2rem 1.5rem;
-    color: var(--muted);
-    font-size: 0.8rem;
-    border-top: 1px solid var(--border);
-  }
-
-  /* EMPTY STATE */
-  .empty-state {
-    text-align: center;
-    padding: 3rem 1.5rem;
-    color: var(--muted);
-  }
-  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-  .empty-state h3 { font-size: 1rem; margin-bottom: 0.5rem; color: var(--text); }
-  .empty-state p { font-size: 0.85rem; }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--card);
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 0.85rem;
-    color: var(--text);
-    z-index: 9999;
-    transition: transform 0.3s;
-    white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* MOBILE */
-  @media (max-width: 480px) {
-    .game-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 1rem 2rem; }
-    .toolbar { padding: 1rem; }
-    .section-header { padding: 0.5rem 1rem 0.75rem; }
-    .featured-card { margin: 0 1rem 2rem; }
-    nav { padding: 0 1rem; }
-    .hero { padding: 2.5rem 1rem 2rem; }
-  }
-
-  @media (max-width: 360px) {
-    .game-grid { grid-template-columns: 1fr 1fr; }
-  }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  /* UPLOAD ZONE */
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: transparent;
-  }
-  .upload-zone:hover, .upload-zone.dragover {
-    border-color: var(--accent);
-    background: rgba(108,99,255,0.05);
-  }
-  .upload-zone p { color: var(--muted); font-size: 0.82rem; margin-top: 6px; }
-  #fileInput { display: none; }
-
-  .game-card-delete {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    background: rgba(255,107,107,0.85);
-    border: none;
-    color: white;
-    font-size: 12px;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-  }
-  .edit-mode .game-card-delete { display: flex; }
-  .edit-mode .game-card:hover { transform: none; }
-
-  /* ADMIN LOGIN */
-  .admin-nav { display: none; }
-  body.is-admin .admin-nav { display: flex; }
-
-  .login-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 3000;
-    background: rgba(0,0,0,0.85);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .login-modal.open { display: flex; }
-
-  .login-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 360px;
-    text-align: center;
-  }
-  .login-box h3 {
-    font-family: 'Orbitron', monospace;
-    font-size: 1rem;
-    color: var(--accent2);
-    margin-bottom: 0.4rem;
-  }
-  .login-box p {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-bottom: 1.5rem;
-  }
-  .login-box input {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    outline: none;
-    text-align: center;
-    letter-spacing: 4px;
-    margin-bottom: 1rem;
-    transition: border-color 0.2s;
-  }
-  .login-box input:focus { border-color: var(--accent); }
-  .login-box input.error { border-color: var(--danger); animation: shake 0.3s; }
-  @keyframes shake {
-    0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
-  }
-  .login-hint { font-size:0.72rem; color:var(--muted); margin-top:0.8rem; opacity:0.6; }
-
-  .admin-indicator {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
-    color: var(--accent2);
-    background: rgba(0,229,255,0.08);
-    border: 1px solid rgba(0,229,255,0.2);
-    padding: 4px 10px;
-    border-radius: 20px;
-    cursor: pointer;
-  }
-  body.is-admin .admin-indicator { display: flex; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GamHub Arcade - Cổng Game Web HTML5 Trực Tuyến</title>
+    <!-- Tailwind CSS và FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+        
+        /* Hiệu ứng neon */
+        .neon-glow-blue {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+        .neon-text-blue {
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+        }
+        .neon-text-purple {
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+        }
+        
+        /* Loại bỏ highlight màu xanh khi chạm trên điện thoại */
+        canvas, button {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
 
-<!-- NAVBAR -->
-<nav>
-  <div class="nav-logo" ondblclick="openLogin()" style="cursor:default;">GAME<span style="color:var(--accent2)">HUB</span></div>
-  <div class="nav-actions">
-    <div class="admin-indicator" onclick="logoutAdmin()">🔐 Admin · Nhấn để thoát</div>
-    <div class="admin-nav" style="gap:10px;">
-      <button class="btn btn-outline" id="editModeBtn" onclick="toggleEditMode()">✎ Sửa</button>
-      <button class="btn btn-primary" onclick="openAdmin()">+ Thêm Game</button>
-    </div>
-  </div>
-</nav>
-
-<!-- LOGIN MODAL -->
-<div class="login-modal" id="loginModal">
-  <div class="login-box">
-    <div style="font-size:2.5rem;margin-bottom:0.8rem;">🔐</div>
-    <h3>Admin Login</h3>
-    <p>Nhập mật khẩu để quản lý game</p>
-    <input type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()" autocomplete="off">
-    <button class="btn btn-primary" onclick="checkLogin()" style="width:100%;padding:12px;">Đăng Nhập</button>
-    <button class="btn btn-outline" onclick="closeLogin()" style="width:100%;padding:10px;margin-top:8px;">Hủy</button>
-    <div class="login-hint">💡 Nhấn đúp vào logo GAMEHUB để mở trang này</div>
-  </div>
-</div>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="scanlines"></div>
-  <div class="hero-badge">🎮 Free Online Games</div>
-  <h1>Chơi Game<br><span>Trực Tuyến Miễn Phí</span></h1>
-  <p>Bộ sưu tập game HTML5 — chạy mượt trên laptop, PC và điện thoại Android. Không cần cài đặt.</p>
-  <div class="hero-stats">
-    <div class="stat">
-      <div class="stat-num" id="totalGames">0</div>
-      <div class="stat-label">Trò Chơi</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">HTML5</div>
-      <div class="stat-label">Platform</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num">100%</div>
-      <div class="stat-label">Miễn Phí</div>
-    </div>
-  </div>
-</section>
-
-<!-- SEARCH & FILTER -->
-<div class="toolbar">
-  <div class="search-box">
-    <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Tìm game..." id="searchInput" oninput="filterGames()">
-  </div>
-  <div class="filter-tags">
-    <button class="tag active" onclick="filterByTag(this,'all')">Tất Cả</button>
-    <button class="tag" onclick="filterByTag(this,'action')">Action</button>
-    <button class="tag" onclick="filterByTag(this,'puzzle')">Puzzle</button>
-    <button class="tag" onclick="filterByTag(this,'arcade')">Arcade</button>
-    <button class="tag" onclick="filterByTag(this,'racing')">Racing</button>
-    <button class="tag" onclick="filterByTag(this,'strategy')">Strategy</button>
-    <button class="tag" onclick="filterByTag(this,'other')">Khác</button>
-  </div>
-</div>
-
-<!-- GAME GRID -->
-<div class="section-header">
-  <div class="section-title">Tất Cả Game</div>
-  <span id="gameCount" style="font-size:0.8rem;color:var(--muted)"></span>
-</div>
-
-<div class="game-grid" id="gameGrid">
-  <!-- games will render here -->
-</div>
-
-<div id="emptyState" class="empty-state" style="display:none;">
-  <div class="empty-icon">🎮</div>
-  <h3>Chưa có game nào</h3>
-  <p>Nhấn <strong style="color:var(--accent)">+ Thêm Game</strong> để upload game HTML đầu tiên</p>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div style="margin-bottom:6px; font-family:'Orbitron',monospace; font-size:0.9rem; color:var(--accent);">GAMEHUB</div>
-  Game HTML5 · Chạy mượt trên mọi thiết bị · Không quảng cáo
-</footer>
-
-<!-- GAME PLAYER MODAL -->
-<div class="modal" id="gameModal">
-  <div class="modal-nav">
-    <div class="modal-title" id="modalTitle">Loading...</div>
-    <div class="modal-actions">
-      <button class="icon-btn" title="Toàn màn hình" onclick="toggleFullscreen()">⛶</button>
-      <button class="icon-btn" title="Tải lại" onclick="reloadGame()">↺</button>
-      <button class="icon-btn" title="Đóng" onclick="closeGame()">✕</button>
-    </div>
-  </div>
-  <div class="game-frame-wrap">
-    <iframe id="gameFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" allow="fullscreen"></iframe>
-  </div>
-</div>
-
-<!-- ADMIN MODAL -->
-<div class="admin-modal" id="adminModal">
-  <div class="admin-box">
-    <h3>🎮 Thêm Game Mới</h3>
-
-    <div class="form-group">
-      <label>Tên Game *</label>
-      <input type="text" id="gameName" placeholder="VD: Super Jump, Snake Classic..." maxlength="50">
-    </div>
-
-    <div class="form-group">
-      <label>Thể Loại</label>
-      <select id="gameGenre">
-        <option value="arcade">Arcade</option>
-        <option value="action">Action</option>
-        <option value="puzzle">Puzzle</option>
-        <option value="racing">Racing</option>
-        <option value="strategy">Strategy</option>
-        <option value="other">Khác</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Mô Tả Ngắn</label>
-      <textarea id="gameDesc" placeholder="Mô tả ngắn về game..." rows="2"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>Upload File HTML Game</label>
-      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-        <div style="font-size:1.8rem;">📁</div>
-        <p>Nhấn để chọn file .html hoặc kéo thả vào đây</p>
-        <p id="fileName" style="color:var(--accent);font-weight:500;"></p>
-      </div>
-      <input type="file" id="fileInput" accept=".html,.htm" onchange="handleFileSelect(event)">
-    </div>
-
-    <div class="form-group">
-      <label>Hoặc dán Link URL Game</label>
-      <input type="url" id="gameUrl" placeholder="https://example.com/game.html">
-    </div>
-
-    <div class="form-group">
-      <label>Chọn Icon Game</label>
-      <div class="emoji-picker" id="emojiPicker">
-        <div class="emoji-opt selected" data-emoji="🎮">🎮</div>
-        <div class="emoji-opt" data-emoji="🕹️">🕹️</div>
-        <div class="emoji-opt" data-emoji="⚔️">⚔️</div>
-        <div class="emoji-opt" data-emoji="🚀">🚀</div>
-        <div class="emoji-opt" data-emoji="🏆">🏆</div>
-        <div class="emoji-opt" data-emoji="💎">💎</div>
-        <div class="emoji-opt" data-emoji="🐉">🐉</div>
-        <div class="emoji-opt" data-emoji="🧩">🧩</div>
-        <div class="emoji-opt" data-emoji="🏎️">🏎️</div>
-        <div class="emoji-opt" data-emoji="⚽">⚽</div>
-        <div class="emoji-opt" data-emoji="🎯">🎯</div>
-        <div class="emoji-opt" data-emoji="🌟">🌟</div>
-        <div class="emoji-opt" data-emoji="🦊">🦊</div>
-        <div class="emoji-opt" data-emoji="🤖">🤖</div>
-        <div class="emoji-opt" data-emoji="🦄">🦄</div>
-        <div class="emoji-opt" data-emoji="🍎">🍎</div>
-        <div class="emoji-opt" data-emoji="💣">💣</div>
-        <div class="emoji-opt" data-emoji="🔫">🔫</div>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button class="btn btn-primary" onclick="saveGame()" style="flex:1;">💾 Lưu Game</button>
-      <button class="btn btn-outline" onclick="closeAdmin()">Hủy</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<script>
-// ============ ADMIN AUTH ============
-const ADMIN_PASSWORD = 'ducanh10'; // ← ĐỔI MẬT KHẨU NÀY!
-
-function checkAdminSession() {
-  if (sessionStorage.getItem('gamehub_admin') === 'true') {
-    document.body.classList.add('is-admin');
-  }
-}
-
-function openLogin() {
-  document.getElementById('loginModal').classList.add('open');
-  setTimeout(() => document.getElementById('pwInput').focus(), 100);
-}
-
-function closeLogin() {
-  document.getElementById('loginModal').classList.remove('open');
-  document.getElementById('pwInput').value = '';
-}
-
-function checkLogin() {
-  const pw = document.getElementById('pwInput').value;
-  if (pw === ADMIN_PASSWORD) {
-    sessionStorage.setItem('gamehub_admin', 'true');
-    document.body.classList.add('is-admin');
-    closeLogin();
-    showToast('✅ Đăng nhập thành công!');
-  } else {
-    const input = document.getElementById('pwInput');
-    input.classList.add('error');
-    input.value = '';
-    setTimeout(() => input.classList.remove('error'), 500);
-    showToast('❌ Sai mật khẩu!');
-  }
-}
-
-function logoutAdmin() {
-  if (!confirm('Thoát chế độ admin?')) return;
-  sessionStorage.removeItem('gamehub_admin');
-  document.body.classList.remove('is-admin');
-  if (editMode) toggleEditMode();
-  showToast('👋 Đã thoát admin');
-}
-// ====================================
-
-let games = JSON.parse(localStorage.getItem('gamehub_games') || '[]');
-let selectedEmoji = '🎮';
-let selectedFile = null;
-let selectedFileContent = null;
-let currentFilter = 'all';
-let editMode = false;
-
-// Demo games if empty
-if (games.length === 0) {
-  games = [
-    { id: 1, name: 'Snake Classic', genre: 'arcade', desc: 'Trò chơi rắn cổ điển huyền thoại', emoji: '🐍', url: '', plays: 1204, builtin: 'snake' },
-    { id: 2, name: 'Breakout', genre: 'arcade', desc: 'Phá gạch kiếm điểm cao nhất', emoji: '🎯', url: '', plays: 892, builtin: 'breakout' },
-    { id: 3, name: 'Memory Cards', genre: 'puzzle', desc: 'Lật thẻ tìm cặp giống nhau', emoji: '🧩', url: '', plays: 567, builtin: 'memory' },
-  ];
-  localStorage.setItem('gamehub_games', JSON.stringify(games));
-}
-
-function renderGames() {
-  const grid = document.getElementById('gameGrid');
-  const empty = document.getElementById('emptyState');
-  const search = document.getElementById('searchInput').value.toLowerCase();
-
-  let filtered = games.filter(g => {
-    const matchSearch = g.name.toLowerCase().includes(search) || (g.desc||'').toLowerCase().includes(search);
-    const matchTag = currentFilter === 'all' || g.genre === currentFilter;
-    return matchSearch && matchTag;
-  });
-
-  document.getElementById('totalGames').textContent = games.length;
-  document.getElementById('gameCount').textContent = filtered.length + ' game';
-
-  if (filtered.length === 0) {
-    grid.innerHTML = '';
-    empty.style.display = 'block';
-  } else {
-    empty.style.display = 'none';
-    grid.innerHTML = filtered.map(g => `
-      <div class="game-card" onclick="playGame(${g.id})">
-        <button class="game-card-delete" onclick="event.stopPropagation();deleteGame(${g.id})" title="Xóa">✕</button>
-        <div class="game-thumb-placeholder">
-          ${g.emoji}
-          <div class="play-overlay">
-            <div class="play-btn-big">▶</div>
-          </div>
+    <!-- HEADER -->
+    <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40 px-4 md:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <i class="fa-solid fa-gamepad text-white text-xl"></i>
+            </div>
+            <div>
+                <span class="text-xs text-blue-400 font-mono-tech tracking-wider uppercase font-bold">Arcade Portal</span>
+                <h1 class="text-lg md:text-xl font-black font-orbitron tracking-widest text-white">GAM<span class="text-blue-500">HUB</span></h1>
+            </div>
         </div>
-        <div class="game-info">
-          <div class="game-title">${g.name}</div>
-          <div class="game-meta">
-            <span class="game-genre">${genreLabel(g.genre)}</span>
-            <span class="game-plays">▶ ${(g.plays||0).toLocaleString()}</span>
-          </div>
+        <div class="flex items-center gap-2">
+            <div class="hidden sm:flex items-center gap-1 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="text-slate-300">Server: ONLINE</span>
+            </div>
+            <span class="bg-blue-950/80 border border-blue-800/60 text-blue-400 px-3.5 py-1.5 rounded-full text-xs font-semibold font-orbitron">
+                gamhub.store
+            </span>
         </div>
-      </div>
-    `).join('');
-  }
-}
+    </header>
 
-function genreLabel(g) {
-  const map = { arcade:'Arcade', action:'Action', puzzle:'Puzzle', racing:'Racing', strategy:'Strategy', other:'Khác' };
-  return map[g] || g;
-}
+    <!-- MAIN INTERFACE -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
+        
+        <!-- HERO / BANNER -->
+        <div class="relative bg-gradient-to-r from-blue-950/50 via-purple-950/20 to-slate-950/80 rounded-2xl p-6 md:p-10 border border-slate-800/80 overflow-hidden shadow-2xl">
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl"></div>
+            <div class="absolute -left-10 -top-10 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10 max-w-xl space-y-4">
+                <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs px-3 py-1 rounded-md font-bold uppercase tracking-wider">
+                    Chơi Game Miễn Phí 100%
+                </span>
+                <h2 class="text-3xl md:text-5xl font-black font-orbitron tracking-wide text-white leading-tight">
+                    THẾ GIỚI GAME <br class="hidden md:block"><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">HTML5 ĐỘC QUYỀN</span>
+                </h2>
+                <p class="text-sm md:text-base text-slate-400 leading-relaxed">
+                    Không tải cài đặt, không quảng cáo phiền phức. Nhấp chuột hoặc chạm tay để trải nghiệm ngay những tựa game hành động kịch tính trên mọi nền tảng di động.
+                </p>
+                <div class="flex items-center gap-4 text-xs font-mono text-slate-500">
+                    <div><i class="fa-solid fa-gamepad text-blue-500 mr-1.5"></i>3 Games Sẵn Sàng</div>
+                    <div><i class="fa-solid fa-mobile text-purple-500 mr-1.5"></i>Tương thích Mobile</div>
+                </div>
+            </div>
+        </div>
 
-function filterGames() { renderGames(); }
+        <!-- GAME GRID SECTION -->
+        <div class="space-y-4" id="game-section">
+            <h3 class="text-lg font-bold font-orbitron tracking-wide text-slate-300 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded bg-blue-500"></span> DANH SÁCH TRÒ CHƠI
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- GAME 1: SPACE STORM -->
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-blue-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <!-- Game Thumbnail (SVG Canvas) -->
+                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <i class="fa-solid fa-rocket text-5xl text-blue-500/80 group-hover:scale-110 group-hover:rotate-12 transition duration-300 z-10"></i>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
+                            <!-- Stars decor -->
+                            <div class="absolute w-1 h-1 bg-white rounded-full top-10 left-10 opacity-30 animate-pulse"></div>
+                            <div class="absolute w-1 h-1 bg-white rounded-full top-24 left-44 opacity-60"></div>
+                            <div class="absolute w-1.5 h-1.5 bg-blue-400 rounded-full top-32 left-20 opacity-40 animate-ping"></div>
+                            <div class="absolute w-1 h-1 bg-white rounded-full top-8 left-72 opacity-50"></div>
+                        </div>
+                        <div class="p-5 space-y-2">
+                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-blue-400 transition">Space Storm</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Lái chiến cơ chiến đấu ngoài vũ trụ. Bắn hạ kẻ địch xâm lăng và né tránh bão đạn nguy hiểm.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0">
+                        <button onclick="startGame('space')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-play text-xs"></i> Chơi ngay
+                        </button>
+                    </div>
+                </div>
 
-function filterByTag(el, tag) {
-  currentFilter = tag;
-  document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderGames();
-}
+                <!-- GAME 2: CYBER RUNNER -->
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-purple-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <!-- Game Thumbnail -->
+                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <i class="fa-solid fa-person-running text-5xl text-purple-500/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
+                            <!-- Cyber grid decor -->
+                            <div class="absolute bottom-0 w-full h-10 border-t border-purple-900/50 flex flex-col gap-1 overflow-hidden opacity-30">
+                                <div class="w-full h-0.5 bg-purple-500"></div>
+                                <div class="w-full h-1 bg-purple-600"></div>
+                            </div>
+                        </div>
+                        <div class="p-5 space-y-2">
+                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-purple-400 transition">Cyber Runner</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Game nhảy né chướng ngại vật phong cách Neon Cyberpunk cực kỳ cuốn hút. Bạn chạy được bao xa?
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0">
+                        <button onclick="startGame('runner')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-play text-xs"></i> Chơi ngay
+                        </button>
+                    </div>
+                </div>
 
-function playGame(id) {
-  const g = games.find(x => x.id === id);
-  if (!g) return;
-  g.plays = (g.plays || 0) + 1;
-  localStorage.setItem('gamehub_games', JSON.stringify(games));
-  renderGames();
+                <!-- GAME 3: RETRO BREAKER -->
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-emerald-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <!-- Game Thumbnail -->
+                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <i class="fa-solid fa-border-all text-5xl text-emerald-500/80 group-hover:scale-110 transition duration-300 z-10"></i>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
+                            <!-- Blocks decoration -->
+                            <div class="absolute top-8 flex gap-1">
+                                <div class="w-6 h-3 bg-red-500 rounded-sm opacity-50"></div>
+                                <div class="w-6 h-3 bg-yellow-500 rounded-sm opacity-50 animate-pulse"></div>
+                                <div class="w-6 h-3 bg-emerald-500 rounded-sm opacity-50"></div>
+                            </div>
+                        </div>
+                        <div class="p-5 space-y-2">
+                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-emerald-400 transition">Retro Breaker</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Đập bóng phá vỡ các mảng gạch đầy màu sắc cổ điển. Thể loại game đập gạch gây nghiện cực cao.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0">
+                        <button onclick="startGame('breaker')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-play text-xs"></i> Chơi ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-  document.getElementById('modalTitle').textContent = g.emoji + ' ' + g.name;
-  document.getElementById('gameModal').classList.add('open');
+    <!-- CABIN CHƠI GAME ĐỘC LẬP (MODAL ARCADE CABINET) -->
+    <div id="gameCabinet" class="hidden fixed inset-0 bg-slate-950/95 z-50 flex flex-col justify-between overflow-y-auto">
+        
+        <!-- Cabin Header -->
+        <div class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="closeCabinet()" class="text-slate-400 hover:text-white transition w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h3 id="cabinetGameTitle" class="font-bold font-orbitron text-blue-400 text-sm md:text-base">Arcade Cabin</h3>
+            </div>
+            <!-- Score Counter -->
+            <div class="flex items-center gap-4">
+                <div class="bg-black/40 border border-slate-800 px-3 py-1 rounded text-xs font-mono">
+                    Score: <span id="gameScore" class="text-emerald-400 font-bold">0</span>
+                </div>
+                <div class="bg-black/40 border border-slate-800 px-3 py-1 rounded text-xs font-mono hidden md:block">
+                    Highscore: <span id="gameHighScore" class="text-yellow-400 font-bold">0</span>
+                </div>
+            </div>
+        </div>
 
-  const frame = document.getElementById('gameFrame');
-  if (g.builtin) {
-    frame.srcdoc = getBuiltinGame(g.builtin);
-  } else if (g.fileContent) {
-    frame.srcdoc = g.fileContent;
-  } else if (g.url) {
-    frame.src = g.url;
-  } else {
-    frame.srcdoc = '<div style="color:white;padding:2rem;text-align:center;font-family:sans-serif"><h2>Game chưa có file</h2><p style="color:#888;margin-top:1rem">Vui lòng upload file HTML khi thêm game.</p></div>';
-  }
-}
+        <!-- Central Play Area (Canvas) -->
+        <div class="flex-1 flex flex-col items-center justify-center p-2 md:p-4">
+            <div class="relative w-full max-w-2xl aspect-[16/10] md:aspect-[16/9] bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl">
+                <canvas id="gameCanvas" class="w-full h-full bg-black"></canvas>
+                
+                <!-- Game Over overlay -->
+                <div id="gameOverOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                    <h4 class="text-3xl md:text-5xl font-black font-orbitron text-red-500 tracking-wider mb-2 animate-bounce">GAME OVER</h4>
+                    <p class="text-slate-400 text-sm mb-6">Bạn đã chơi rất tốt! Hãy thử lại một lần nữa.</p>
+                    <button onclick="restartActiveGame()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 transition active:scale-95 shadow-lg shadow-blue-500/30">
+                        <i class="fa-solid fa-rotate-right"></i> Chơi lại
+                    </button>
+                </div>
+            </div>
+        </div>
 
-function closeGame() {
-  document.getElementById('gameModal').classList.remove('open');
-  document.getElementById('gameFrame').src = 'about:blank';
-  document.getElementById('gameFrame').srcdoc = '';
-}
+        <!-- MÀN HÌNH NÚT ĐIỀU KHIỂN GIẢ LẬP TRÊN MOBILE -->
+        <div class="bg-slate-900 border-t border-slate-800 p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between text-xs text-slate-500 font-mono">
+                <span><i class="fa-solid fa-circle-info mr-1"></i> Điều khiển di động: Chạm các nút dưới hoặc kéo/chạm trực tiếp trên màn hình</span>
+                <span class="hidden md:inline">Phím máy tính: Arrow Keys (Di chuyển) / Space (Bắn/Nhảy)</span>
+            </div>
 
-function reloadGame() {
-  const f = document.getElementById('gameFrame');
-  const src = f.src;
-  const doc = f.srcdoc;
-  f.srcdoc = '';
-  f.src = 'about:blank';
-  setTimeout(() => {
-    if (doc) f.srcdoc = doc;
-    else f.src = src;
-  }, 100);
-}
+            <div class="flex items-center justify-center gap-6 py-2">
+                <!-- Nhóm phím di chuyển Trái / Phải -->
+                <div class="flex gap-4">
+                    <button id="btnLeft" class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 active:bg-blue-600 text-white text-xl flex items-center justify-center transition select-none">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <button id="btnRight" class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 active:bg-blue-600 text-white text-xl flex items-center justify-center transition select-none">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <!-- Nhóm phím chức năng (Bắn / Nhảy) -->
+                <div>
+                    <button id="btnAction" class="w-24 h-14 rounded-xl bg-red-600 border border-red-500 active:bg-red-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition select-none uppercase shadow-lg shadow-red-600/20">
+                        <i class="fa-solid fa-crosshairs text-xs"></i> <span>Hành động</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-function toggleFullscreen() {
-  const wrap = document.getElementById('gameModal');
-  if (!document.fullscreenElement) {
-    wrap.requestFullscreen && wrap.requestFullscreen();
-  } else {
-    document.exitFullscreen && document.exitFullscreen();
-  }
-}
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 mt-12 px-4">
+        <p class="font-orbitron font-bold tracking-widest text-slate-400 mb-1">GAMHUB ONLINE ARCADE</p>
+        <p class="text-slate-600">Trải nghiệm game HTML5 mượt mà. Hệ thống chạy ổn định nhất tại domain: <a href="https://gamhub.store" class="text-blue-500 hover:underline">gamhub.store</a></p>
+    </footer>
 
-function openAdmin() {
-  document.getElementById('adminModal').classList.add('open');
-}
+    <!-- LOGIC TRÒ CHƠI CHUYÊN SÂU -->
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameCabinet = document.getElementById('gameCabinet');
+        const cabinetGameTitle = document.getElementById('cabinetGameTitle');
+        const gameScoreText = document.getElementById('gameScore');
+        const gameHighScoreText = document.getElementById('gameHighScore');
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
 
-function closeAdmin() {
-  document.getElementById('adminModal').classList.remove('open');
-  document.getElementById('gameName').value = '';
-  document.getElementById('gameDesc').value = '';
-  document.getElementById('gameUrl').value = '';
-  document.getElementById('fileName').textContent = '';
-  selectedFile = null;
-  selectedFileContent = null;
-  selectedEmoji = '🎮';
-  document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
-  document.querySelector('[data-emoji="🎮"]').classList.add('selected');
-}
+        // Âm thanh giả lập qua Web Audio API
+        let audioCtx = null;
+        function playSound(type) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                if (type === 'laser') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now + 0.15);
+                } else if (type === 'explosion') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now + 0.35);
+                } else if (type === 'jump') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now + 0.2);
+                } else if (type === 'hit') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.setValueAtTime(600, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now + 0.15);
+                }
+            } catch (e) {
+                console.log("Audio Error");
+            }
+        }
 
-function handleFileSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  selectedFile = file;
-  document.getElementById('fileName').textContent = '✓ ' + file.name;
-  const reader = new FileReader();
-  reader.onload = ev => { selectedFileContent = ev.target.result; };
-  reader.readAsText(file);
-}
+        // Global Game States
+        let activeGame = null;
+        let score = 0;
+        let highScores = { space: 0, runner: 0, breaker: 0 };
+        let isGameOver = false;
+        let keys = {};
 
-document.getElementById('uploadZone').addEventListener('dragover', e => {
-  e.preventDefault();
-  document.getElementById('uploadZone').classList.add('dragover');
-});
-document.getElementById('uploadZone').addEventListener('dragleave', () => {
-  document.getElementById('uploadZone').classList.remove('dragover');
-});
-document.getElementById('uploadZone').addEventListener('drop', e => {
-  e.preventDefault();
-  document.getElementById('uploadZone').classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm'))) {
-    selectedFile = file;
-    document.getElementById('fileName').textContent = '✓ ' + file.name;
-    const reader = new FileReader();
-    reader.onload = ev => { selectedFileContent = ev.target.result; };
-    reader.readAsText(file);
-  }
-});
+        // Keyboard listeners
+        window.addEventListener('keydown', e => { keys[e.code] = true; });
+        window.addEventListener('keyup', e => { keys[e.code] = false; });
 
-document.querySelectorAll('.emoji-opt').forEach(el => {
-  el.addEventListener('click', () => {
-    document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedEmoji = el.dataset.emoji;
-  });
-});
+        // Touch Control Listeners
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        const btnAction = document.getElementById('btnAction');
 
-function saveGame() {
-  const name = document.getElementById('gameName').value.trim();
-  const url = document.getElementById('gameUrl').value.trim();
-  if (!name) { showToast('⚠️ Vui lòng nhập tên game'); return; }
-  if (!selectedFileContent && !url) { showToast('⚠️ Vui lòng upload file hoặc nhập URL'); return; }
+        let touchState = { left: false, right: false, action: false };
+        
+        btnLeft.addEventListener('touchstart', e => { e.preventDefault(); touchState.left = true; });
+        btnLeft.addEventListener('touchend', () => { touchState.left = false; });
+        btnRight.addEventListener('touchstart', e => { e.preventDefault(); touchState.right = true; });
+        btnRight.addEventListener('touchend', () => { touchState.right = false; });
+        
+        btnAction.addEventListener('touchstart', e => { e.preventDefault(); touchState.action = true; });
+        btnAction.addEventListener('touchend', () => { touchState.action = false; });
 
-  const newGame = {
-    id: Date.now(),
-    name,
-    genre: document.getElementById('gameGenre').value,
-    desc: document.getElementById('gameDesc').value.trim(),
-    emoji: selectedEmoji,
-    url: url || '',
-    fileContent: selectedFileContent || null,
-    plays: 0
-  };
+        // Thêm chuột giả lập nút bấm trên PC
+        btnLeft.addEventListener('mousedown', () => { touchState.left = true; });
+        btnLeft.addEventListener('mouseup', () => { touchState.left = false; });
+        btnRight.addEventListener('mousedown', () => { touchState.right = true; });
+        btnRight.addEventListener('mouseup', () => { touchState.right = false; });
+        btnAction.addEventListener('mousedown', () => { touchState.action = true; });
+        btnAction.addEventListener('mouseup', () => { touchState.action = false; });
 
-  games.unshift(newGame);
-  const toSave = games.map(g => ({...g, fileContent: g.fileContent}));
-  try { localStorage.setItem('gamehub_games', JSON.stringify(toSave)); } catch(e) {}
-  renderGames();
-  closeAdmin();
-  showToast('✅ Đã thêm game: ' + name);
-}
+        // Đảm bảo kích thước Canvas chuẩn hóa
+        function setupCanvasSize() {
+            canvas.width = 1280;
+            canvas.height = 720;
+        }
 
-function deleteGame(id) {
-  if (!confirm('Xóa game này?')) return;
-  games = games.filter(g => g.id !== id);
-  localStorage.setItem('gamehub_games', JSON.stringify(games));
-  renderGames();
-  showToast('🗑️ Đã xóa game');
-}
+        function startGame(gameKey) {
+            setupCanvasSize();
+            activeGame = gameKey;
+            score = 0;
+            isGameOver = false;
+            gameScoreText.innerText = score;
+            gameHighScoreText.innerText = highScores[gameKey] || 0;
+            gameOverOverlay.classList.add('hidden');
+            gameCabinet.classList.remove('hidden');
 
-function toggleEditMode() {
-  editMode = !editMode;
-  document.body.classList.toggle('edit-mode', editMode);
-  document.getElementById('editModeBtn').textContent = editMode ? '✓ Xong' : '✎ Sửa';
-}
+            // Cập nhật nhãn phím thao tác giả lập
+            if (gameKey === 'space') {
+                cabinetGameTitle.innerText = "🌌 SPACE STORM (Arcade)";
+                btnAction.querySelector('span').innerText = "BẮN";
+                initSpaceGame();
+            } else if (gameKey === 'runner') {
+                cabinetGameTitle.innerText = "🏃 CYBER RUNNER (Endless)";
+                btnAction.querySelector('span').innerText = "NHẢY";
+                initRunnerGame();
+            } else if (gameKey === 'breaker') {
+                cabinetGameTitle.innerText = "🧱 RETRO BREAKER (Brick)";
+                btnAction.querySelector('span').innerText = "KÍCH BÓNG";
+                initBreakerGame();
+            }
+        }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+        function closeCabinet() {
+            gameCabinet.classList.add('hidden');
+            isGameOver = true;
+            activeGame = null;
+        }
 
-// BUILT-IN GAMES
-function getBuiltinGame(name) {
-  if (name === 'snake') return snakeGame();
-  if (name === 'breakout') return breakoutGame();
-  if (name === 'memory') return memoryGame();
-  return '';
-}
+        function restartActiveGame() {
+            startGame(activeGame);
+        }
 
-function snakeGame() {
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Snake</title><style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#0D0F1A;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:monospace;color:#fff;touch-action:none}
-h1{font-size:1.5rem;margin-bottom:10px;color:#6C63FF;letter-spacing:3px}
-#score{font-size:1rem;color:#00E5FF;margin-bottom:10px}
-canvas{border:2px solid #6C63FF;border-radius:8px;background:#1A1D2E}
-#msg{margin-top:12px;font-size:0.9rem;color:#888}
-.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:16px;max-width:180px}
-.ctl-btn{padding:12px;background:#1A1D2E;border:1px solid #333;border-radius:8px;color:#fff;font-size:1.2rem;cursor:pointer;text-align:center}
-.ctl-btn:active{background:#6C63FF}
-</style></head><body>
-<h1>🐍 SNAKE</h1>
-<div id="score">Score: 0 | Best: 0</div>
-<canvas id="c" width="320" height="320"></canvas>
-<div id="msg">Nhấn phím mũi tên hoặc nút bên dưới để chơi</div>
-<div class="controls">
-  <div></div><button class="ctl-btn" onclick="dir={x:0,y:-1}">▲</button><div></div>
-  <button class="ctl-btn" onclick="dir={x:-1,y:0}">◀</button>
-  <button class="ctl-btn" onclick="dir={x:0,y:1}">▼</button>
-  <button class="ctl-btn" onclick="dir={x:1,y:0}">▶</button>
-</div>
-<script>
-const c=document.getElementById('c'),ctx=c.getContext('2d'),S=20,W=16;
-let snake=[{x:8,y:8}],dir={x:1,y:0},food={x:5,y:5},score=0,best=0,alive=true,loop;
-function rndFood(){food={x:Math.floor(Math.random()*W),y:Math.floor(Math.random()*W)};}
-function draw(){
-  ctx.fillStyle='#1A1D2E';ctx.fillRect(0,0,320,320);
-  ctx.fillStyle='#FF6B6B';ctx.beginPath();ctx.arc(food.x*S+S/2,food.y*S+S/2,7,0,Math.PI*2);ctx.fill();
-  snake.forEach((p,i)=>{ctx.fillStyle=i===0?'#6C63FF':'#4a43cc';ctx.beginPath();ctx.roundRect(p.x*S+1,p.y*S+1,S-2,S-2,4);ctx.fill();});
-}
-function tick(){
-  if(!alive)return;
-  const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
-  if(h.x<0||h.x>=W||h.y<0||h.y>=W||snake.some(s=>s.x===h.x&&s.y===s.y&&snake.indexOf(s)>0)){
-    alive=false;document.getElementById('msg').textContent='Game Over! Chạm màn hình để chơi lại';
-    c.onclick=()=>{snake=[{x:8,y:8}];dir={x:1,y:0};score=0;alive=true;rndFood();c.onclick=null;document.getElementById('msg').textContent='';};return;}
-  snake.unshift(h);
-  if(h.x===food.x&&h.y===food.y){score++;if(score>best)best=score;document.getElementById('score').textContent='Score: '+score+' | Best: '+best;rndFood();}
-  else snake.pop();
-  draw();
-}
-document.addEventListener('keydown',e=>{const m={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}};if(m[e.key]&&!(m[e.key].x===-dir.x&&m[e.key].y===-dir.y))dir=m[e.key];});
-rndFood();draw();setInterval(tick,150);
-<\/script></body></html>`;
-}
+        function setGameOver() {
+            isGameOver = true;
+            gameOverOverlay.classList.remove('hidden');
+            playSound('explosion');
+            if (score > highScores[activeGame]) {
+                highScores[activeGame] = score;
+                gameHighScoreText.innerText = score;
+            }
+        }
 
-function breakoutGame() {
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Breakout</title><style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#0D0F1A;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:monospace;color:#fff;touch-action:none}
-h1{font-size:1.3rem;color:#6C63FF;letter-spacing:3px;margin-bottom:6px}
-#score{color:#00E5FF;font-size:0.9rem;margin-bottom:8px}
-canvas{border:2px solid #6C63FF;border-radius:8px;cursor:none}
-</style></head><body>
-<h1>🎯 BREAKOUT</h1>
-<div id="score">Score: 0</div>
-<canvas id="c" width="360" height="440"></canvas>
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let bx=180,by=400,br=8,vx=3,vy=-4,px=140,pw=80,ph=10,score=0,alive=true;
-const bricks=[];
-for(let r=0;r<5;r++)for(let c=0;c<8;c++)bricks.push({x:10+c*43,y:30+r*28,w:38,h:20,alive:true,color:['#FF6B6B','#FFD700','#6C63FF','#00E5FF','#4CAF50'][r]});
-function draw(){
-  ctx.fillStyle='#1A1D2E';ctx.fillRect(0,0,360,440);
-  bricks.filter(b=>b.alive).forEach(b=>{ctx.fillStyle=b.color;ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,3);ctx.fill();});
-  ctx.fillStyle='#6C63FF';ctx.beginPath();ctx.roundRect(px,425,pw,ph,5);ctx.fill();
-  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fill();
-  if(!alive){ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(0,0,360,440);ctx.fillStyle='#FF6B6B';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.fillText('GAME OVER',180,200);ctx.fillStyle='#888';ctx.font='14px monospace';ctx.fillText('Click để chơi lại',180,240);}
-}
-function update(){
-  if(!alive)return;
-  bx+=vx;by+=vy;
-  if(bx<br||bx>360-br)vx=-vx;
-  if(by<br)vy=-vy;
-  if(by>440){alive=false;return;}
-  if(by+br>425&&by+br<440&&bx>px&&bx<px+pw)vy=-Math.abs(vy);
-  bricks.filter(b=>b.alive).forEach(b=>{if(bx+br>b.x&&bx-br<b.x+b.w&&by+br>b.y&&by-br<b.y+b.h){b.alive=false;vy=-vy;score++;document.getElementById('score').textContent='Score: '+score;}});
-  draw();
-}
-cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();px=e.clientX-r.left-pw/2;px=Math.max(0,Math.min(360-pw,px));});
-cv.addEventListener('touchmove',e=>{e.preventDefault();const r=cv.getBoundingClientRect();px=e.touches[0].clientX-r.left-pw/2;px=Math.max(0,Math.min(360-pw,px));},{passive:false});
-cv.addEventListener('click',()=>{if(!alive){bricks.forEach(b=>b.alive=true);bx=180;by=400;vx=3;vy=-4;score=0;document.getElementById('score').textContent='Score: 0';alive=true;}});
-draw();setInterval(update,16);
-<\/script></body></html>`;
-}
+        // ========================================================
+        // GAME 1: SPACE STORM (Bắn tàu vũ trụ cực đã)
+        // ========================================================
+        let player, playerLasers, enemies, enemyExplosions, spaceStars;
 
-function memoryGame() {
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Memory</title><style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#0D0F1A;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;color:#fff;padding:1rem}
-h1{font-size:1.3rem;color:#6C63FF;letter-spacing:2px;margin-bottom:8px}
-#info{color:#00E5FF;font-size:0.85rem;margin-bottom:14px}
-#grid{display:grid;grid-template-columns:repeat(4,70px);gap:10px}
-.card{width:70px;height:70px;border-radius:10px;border:2px solid #333;background:#1A1D2E;display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer;transition:all 0.2s;user-select:none}
-.card.flipped,.card.matched{background:#6C63FF;border-color:#6C63FF}
-.card.matched{background:#4CAF50;border-color:#4CAF50}
-#win{display:none;text-align:center;color:#FFD700;font-size:1.2rem;margin-top:16px}
-button{margin-top:12px;padding:8px 20px;background:#6C63FF;border:none;border-radius:8px;color:#fff;font-family:monospace;font-size:0.9rem;cursor:pointer}
-</style></head><body>
-<h1>🧩 MEMORY</h1>
-<div id="info">Lật thẻ: 0 | Tìm được: 0/8</div>
-<div id="grid"></div>
-<div id="win">🎉 Tuyệt vời! Bạn đã thắng!</div>
-<button onclick="init()">Chơi Lại</button>
-<script>
-const emojis=['🦊','🐉','🚀','💎','⚡','🌟','🎯','🔥'];
-let cards=[],flipped=[],matched=0,moves=0,lock=false;
-function init(){
-  const arr=[...emojis,...emojis].sort(()=>Math.random()-0.5);
-  cards=arr.map((e,i)=>({id:i,emoji:e,flipped:false,matched:false}));
-  flipped=[];matched=0;moves=0;lock=false;
-  document.getElementById('win').style.display='none';
-  render();
-}
-function render(){
-  document.getElementById('info').textContent='Lật thẻ: '+moves+' | Tìm được: '+matched+'/8';
-  const g=document.getElementById('grid');
-  g.innerHTML=cards.map(c=>`<div class="card${c.flipped||c.matched?' flipped':''}${c.matched?' matched':''}" onclick="flip(${c.id})">${c.flipped||c.matched?c.emoji:''}</div>`).join('');
-}
-function flip(id){
-  if(lock||cards[id].matched||cards[id].flipped)return;
-  cards[id].flipped=true;flipped.push(id);render();
-  if(flipped.length===2){
-    moves++;lock=true;
-    if(cards[flipped[0]].emoji===cards[flipped[1]].emoji){
-      cards[flipped[0]].matched=cards[flipped[1]].matched=true;
-      matched++;flipped=[];lock=false;
-      if(matched===8){document.getElementById('win').style.display='block';}
-    }else{
-      setTimeout(()=>{cards[flipped[0]].flipped=cards[flipped[1]].flipped=false;flipped=[];lock=false;render();},900);
-    }
-    render();
-  }
-}
-init();
-<\/script></body></html>`;
-}
+        function initSpaceGame() {
+            player = { x: canvas.width / 2, y: canvas.height - 100, width: 60, height: 50, speed: 10 };
+            playerLasers = [];
+            enemies = [];
+            enemyExplosions = [];
+            spaceStars = [];
+            // Sinh tinh thể nền
+            for (let i = 0; i < 50; i++) {
+                spaceStars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 2 + 1, speed: Math.random() * 2 + 0.5 });
+            }
+            lastLaserTime = 0;
+            requestAnimationFrame(spaceLoop);
+        }
 
-// Keyboard close
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeGame(); closeLogin(); }
-});
+        let lastLaserTime = 0;
+        function spaceLoop() {
+            if (isGameOver || activeGame !== 'space') return;
 
-checkAdminSession();
-renderGames();
-</script>
+            // Xử lý di chuyển
+            if (keys['ArrowLeft'] || touchState.left) {
+                player.x = Math.max(player.width, player.x - player.speed);
+            }
+            if (keys['ArrowRight'] || touchState.right) {
+                player.x = Math.min(canvas.width - player.width, player.x + player.speed);
+            }
+            // Xử lý bắn đạn
+            if (keys['Space'] || touchState.action) {
+                const now = performance.now();
+                if (now - lastLaserTime > 180) {
+                    playerLasers.push({ x: player.x, y: player.y - 30, speed: 14 });
+                    playSound('laser');
+                    lastLaserTime = now;
+                }
+            }
+
+            // Vẽ vũ trụ nền
+            ctx.fillStyle = '#02020a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Vẽ sao lấp lánh trôi
+            ctx.fillStyle = '#ffffff';
+            spaceStars.forEach(s => {
+                s.y += s.speed;
+                if (s.y > canvas.height) s.y = 0;
+                ctx.fillRect(s.x, s.y, s.size, s.size);
+            });
+
+            // Vẽ tàu người chơi (phi thuyền neon cực ngầu)
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#3b82f6';
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.moveTo(0, -25);
+            ctx.lineTo(-30, 25);
+            ctx.lineTo(-10, 15);
+            ctx.lineTo(10, 15);
+            ctx.lineTo(30, 25);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            // Sinh quái ngẫu nhiên
+            if (Math.random() < 0.03) {
+                enemies.push({ x: Math.random() * (canvas.width - 80) + 40, y: -40, width: 45, height: 40, speed: Math.random() * 3 + 3, hp: 1 });
+            }
+
+            // Vẽ và cập nhật Laser
+            ctx.fillStyle = '#60a5fa';
+            playerLasers.forEach((l, idx) => {
+                l.y -= l.speed;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#60a5fa';
+                ctx.fillRect(l.x - 3, l.y, 6, 20);
+                if (l.y < -30) playerLasers.splice(idx, 1);
+            });
+            ctx.shadowBlur = 0; // Reset shadow
+
+            // Vẽ và cập nhật quái
+            enemies.forEach((e, eIdx) => {
+                e.y += e.speed;
+                
+                // Vẽ quái vật hình thoi đỏ neon rực lửa
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(e.x, e.y - 20);
+                ctx.lineTo(e.x - 22, e.y);
+                ctx.lineTo(e.x, e.y + 20);
+                ctx.lineTo(e.x + 22, e.y);
+                ctx.closePath();
+                ctx.fill();
+
+                // Kiểm tra va chạm với tàu người chơi
+                const dist = Math.hypot(player.x - e.x, player.y - e.y);
+                if (dist < 40) {
+                    setGameOver();
+                }
+
+                // Kiểm tra va chạm đạn bắn trúng quái
+                playerLasers.forEach((l, lIdx) => {
+                    const hitDist = Math.hypot(l.x - e.x, l.y - e.y);
+                    if (hitDist < 30) {
+                        playSound('explosion');
+                        enemies.splice(eIdx, 1);
+                        playerLasers.splice(lIdx, 1);
+                        score += 10;
+                        gameScoreText.innerText = score;
+                    }
+                });
+
+                if (e.y > canvas.height + 40) enemies.splice(eIdx, 1);
+            });
+
+            requestAnimationFrame(spaceLoop);
+        }
+
+        // ========================================================
+        // GAME 2: CYBER RUNNER (Nhảy né chướng ngại vật mượt mà)
+        // ========================================================
+        let runner, obstacles, runnerSpeed, obstacleTimer, gridOffset;
+
+        function initRunnerGame() {
+            runner = { x: 150, y: canvas.height - 150, width: 45, height: 60, vy: 0, gravity: 1.8, isGrounded: true, jumpPower: -30 };
+            obstacles = [];
+            runnerSpeed = 9;
+            obstacleTimer = 0;
+            gridOffset = 0;
+            requestAnimationFrame(runnerLoop);
+        }
+
+        function runnerLoop() {
+            if (isGameOver || activeGame !== 'runner') return;
+
+            // Xử lý nhảy
+            if ((keys['Space'] || touchState.action) && runner.isGrounded) {
+                runner.vy = runner.jumpPower;
+                runner.isGrounded = false;
+                playSound('jump');
+            }
+
+            // Trọng lực rơi tự do
+            runner.vy += runner.gravity;
+            runner.y += runner.vy;
+
+            // Chạm đất
+            const groundY = canvas.height - 150;
+            if (runner.y >= groundY) {
+                runner.y = groundY;
+                runner.vy = 0;
+                runner.isGrounded = true;
+            }
+
+            // Xóa màn hình
+            ctx.fillStyle = '#060112';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Vẽ nền lưới Cyber chạy lùi tạo cảm giác đang chuyển động
+            gridOffset = (gridOffset - runnerSpeed) % 80;
+            ctx.strokeStyle = '#220847';
+            ctx.lineWidth = 2;
+            for (let x = gridOffset; x < canvas.width; x += 80) {
+                ctx.beginPath();
+                ctx.moveTo(x, groundY);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            // Vẽ đường chân trời
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY + 10);
+            ctx.lineTo(canvas.width, groundY + 10);
+            ctx.stroke();
+
+            // Vẽ nhân vật (Khối cầu vàng neon phát sáng)
+            ctx.save();
+            ctx.translate(runner.x, runner.y);
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#fbbf24';
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(-runner.width / 2, -runner.height, runner.width, runner.height);
+            ctx.restore();
+
+            // Sinh chướng ngại vật (Khối năng lượng màu hồng tím)
+            obstacleTimer++;
+            if (obstacleTimer > 70) {
+                obstacles.push({ x: canvas.width + 50, y: groundY + 10, width: 40, height: Math.random() * 40 + 40 });
+                obstacleTimer = 0;
+                // Tăng tốc dần trò chơi theo điểm số
+                if (runnerSpeed < 18) runnerSpeed += 0.2;
+            }
+
+            // Cập nhật và vẽ các chướng ngại vật
+            obstacles.forEach((o, idx) => {
+                o.x -= runnerSpeed;
+
+                ctx.save();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ec4899';
+                ctx.fillStyle = '#ec4899';
+                ctx.fillRect(o.x - o.width/2, o.y - o.height, o.width, o.height);
+                ctx.restore();
+
+                // Kiểm tra va chạm hộp (AABB)
+                const rx = runner.x - runner.width/2;
+                const ry = runner.y - runner.height;
+                const ox = o.x - o.width/2;
+                const oy = o.y - o.height;
+
+                if (rx < ox + o.width && rx + runner.width > ox && ry < oy + o.height && ry + runner.height > oy) {
+                    setGameOver();
+                }
+
+                // Điểm số tăng dần khi vượt qua chướng ngại vật thành công
+                if (o.x < runner.x && !o.passed) {
+                    o.passed = true;
+                    score += 5;
+                    gameScoreText.innerText = score;
+                }
+
+                if (o.x < -100) obstacles.splice(idx, 1);
+            });
+
+            requestAnimationFrame(runnerLoop);
+        }
+
+        // ========================================================
+        // GAME 3: RETRO BREAKER (Đập gạch huyền thoại)
+        // ========================================================
+        let paddle, ball, bricks;
+
+        function initBreakerGame() {
+            paddle = { x: canvas.width / 2, y: canvas.height - 80, width: 140, height: 18, speed: 12 };
+            ball = { x: canvas.width / 2, y: canvas.height - 140, r: 10, vx: 5, vy: -5, isLaunched: false };
+            bricks = [];
+
+            // Thiết lập tường gạch sặc sỡ
+            const rows = 4;
+            const cols = 10;
+            const bWidth = 110;
+            const bHeight = 25;
+            const startX = (canvas.width - (cols * bWidth + (cols - 1) * 8)) / 2;
+
+            const colors = ['#f43f5e', '#fb923c', '#10b981', '#60a5fa'];
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    bricks.push({
+                        x: startX + c * (bWidth + 8),
+                        y: 100 + r * (bHeight + 8),
+                        width: bWidth,
+                        height: bHeight,
+                        color: colors[r]
+                    });
+                }
+            }
+            requestAnimationFrame(breakerLoop);
+        }
+
+        function breakerLoop() {
+            if (isGameOver || activeGame !== 'breaker') return;
+
+            // Di chuyển paddle đỡ bóng
+            if (keys['ArrowLeft'] || touchState.left) {
+                paddle.x = Math.max(paddle.width/2 + 20, paddle.x - paddle.speed);
+            }
+            if (keys['ArrowRight'] || touchState.right) {
+                paddle.x = Math.min(canvas.width - paddle.width/2 - 20, paddle.x + paddle.speed);
+            }
+
+            // Nhấn hành động để giải phóng quả bóng bắt đầu trận
+            if ((keys['Space'] || touchState.action) && !ball.isLaunched) {
+                ball.isLaunched = true;
+                ball.vx = (Math.random() > 0.5 ? 6 : -6);
+                ball.vy = -7;
+            }
+
+            // Xoay quanh quả bóng nếu chưa bắn
+            if (!ball.isLaunched) {
+                ball.x = paddle.x;
+                ball.y = paddle.y - 25;
+            } else {
+                // Di chuyển bóng thực tế
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+
+                // Nảy tường trái/phải
+                if (ball.x < ball.r || ball.x > canvas.width - ball.r) {
+                    ball.vx *= -1;
+                    playSound('hit');
+                }
+                // Nảy trần nhà
+                if (ball.y < ball.r) {
+                    ball.vy *= -1;
+                    playSound('hit');
+                }
+                // Rớt hố chết mạng
+                if (ball.y > canvas.height) {
+                    setGameOver();
+                }
+
+                // Bóng nảy khi va chạm bệ hứng (Paddle)
+                if (ball.y + ball.r >= paddle.y - paddle.height/2 && ball.x > paddle.x - paddle.width/2 && ball.x < paddle.x + paddle.width/2) {
+                    ball.vy *= -1;
+                    // Đổi góc bay dựa trên điểm tiếp xúc bóng với bệ đỡ
+                    const offset = (ball.x - paddle.x) / (paddle.width / 2);
+                    ball.vx = offset * 8;
+                    playSound('hit');
+                }
+
+                // Va chạm đập vỡ từng viên gạch
+                bricks.forEach((b, idx) => {
+                    if (ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.width && ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.height) {
+                        ball.vy *= -1;
+                        playSound('explosion');
+                        bricks.splice(idx, 1);
+                        score += 20;
+                        gameScoreText.innerText = score;
+                    }
+                });
+            }
+
+            // Vẽ giao diện game
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Vẽ bệ đỡ paddle (Màu xanh neon phát sáng)
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#10b981';
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(paddle.x - paddle.width/2, paddle.y - paddle.height/2, paddle.width, paddle.height);
+            ctx.restore();
+
+            // Vẽ gạch mảng tường màu sắc
+            bricks.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+
+            // Vẽ quả bóng (Màu trắng phát sáng)
+            ctx.save();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            requestAnimationFrame(breakerLoop);
+        }
+    </script>
 </body>
 </html>

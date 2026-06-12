@@ -682,18 +682,106 @@
   }
   .edit-mode .game-card-delete { display: flex; }
   .edit-mode .game-card:hover { transform: none; }
+
+  /* ADMIN LOGIN */
+  .admin-nav { display: none; }
+  body.is-admin .admin-nav { display: flex; }
+
+  .login-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(0,0,0,0.85);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .login-modal.open { display: flex; }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+  .login-box h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    color: var(--accent2);
+    margin-bottom: 0.4rem;
+  }
+  .login-box p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .login-box input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .login-box input:focus { border-color: var(--accent); }
+  .login-box input.error { border-color: var(--danger); animation: shake 0.3s; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+  }
+  .login-hint { font-size:0.72rem; color:var(--muted); margin-top:0.8rem; opacity:0.6; }
+
+  .admin-indicator {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--accent2);
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  body.is-admin .admin-indicator { display: flex; }
 </style>
 </head>
 <body>
 
 <!-- NAVBAR -->
 <nav>
-  <div class="nav-logo">GAME<span style="color:var(--accent2)">HUB</span></div>
+  <div class="nav-logo" ondblclick="openLogin()" style="cursor:default;">GAME<span style="color:var(--accent2)">HUB</span></div>
   <div class="nav-actions">
-    <button class="btn btn-outline" id="editModeBtn" onclick="toggleEditMode()">✎ Sửa</button>
-    <button class="btn btn-primary" onclick="openAdmin()">+ Thêm Game</button>
+    <div class="admin-indicator" onclick="logoutAdmin()">🔐 Admin · Nhấn để thoát</div>
+    <div class="admin-nav" style="gap:10px;">
+      <button class="btn btn-outline" id="editModeBtn" onclick="toggleEditMode()">✎ Sửa</button>
+      <button class="btn btn-primary" onclick="openAdmin()">+ Thêm Game</button>
+    </div>
   </div>
 </nav>
+
+<!-- LOGIN MODAL -->
+<div class="login-modal" id="loginModal">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:0.8rem;">🔐</div>
+    <h3>Admin Login</h3>
+    <p>Nhập mật khẩu để quản lý game</p>
+    <input type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()" autocomplete="off">
+    <button class="btn btn-primary" onclick="checkLogin()" style="width:100%;padding:12px;">Đăng Nhập</button>
+    <button class="btn btn-outline" onclick="closeLogin()" style="width:100%;padding:10px;margin-top:8px;">Hủy</button>
+    <div class="login-hint">💡 Nhấn đúp vào logo GAMEHUB để mở trang này</div>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -848,6 +936,50 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ============ ADMIN AUTH ============
+const ADMIN_PASSWORD = 'ducanh10'; // ← ĐỔI MẬT KHẨU NÀY!
+
+function checkAdminSession() {
+  if (sessionStorage.getItem('gamehub_admin') === 'true') {
+    document.body.classList.add('is-admin');
+  }
+}
+
+function openLogin() {
+  document.getElementById('loginModal').classList.add('open');
+  setTimeout(() => document.getElementById('pwInput').focus(), 100);
+}
+
+function closeLogin() {
+  document.getElementById('loginModal').classList.remove('open');
+  document.getElementById('pwInput').value = '';
+}
+
+function checkLogin() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    sessionStorage.setItem('gamehub_admin', 'true');
+    document.body.classList.add('is-admin');
+    closeLogin();
+    showToast('✅ Đăng nhập thành công!');
+  } else {
+    const input = document.getElementById('pwInput');
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 500);
+    showToast('❌ Sai mật khẩu!');
+  }
+}
+
+function logoutAdmin() {
+  if (!confirm('Thoát chế độ admin?')) return;
+  sessionStorage.removeItem('gamehub_admin');
+  document.body.classList.remove('is-admin');
+  if (editMode) toggleEditMode();
+  showToast('👋 Đã thoát admin');
+}
+// ====================================
+
 let games = JSON.parse(localStorage.getItem('gamehub_games') || '[]');
 let selectedEmoji = '🎮';
 let selectedFile = null;
@@ -1215,9 +1347,10 @@ init();
 
 // Keyboard close
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeGame();
+  if (e.key === 'Escape') { closeGame(); closeLogin(); }
 });
 
+checkAdminSession();
 renderGames();
 </script>
 </body>

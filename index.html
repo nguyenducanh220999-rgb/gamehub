@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameHub - Chơi Game Trực Tuyến</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0D0F1A;
+    --surface: #151825;
+    --card: #1A1D2E;
+    --card-hover: #1F2338;
+    --accent: #6C63FF;
+    --accent2: #00E5FF;
+    --danger: #FF6B6B;
+    --text: #E8E9F0;
+    --muted: #7B7D8E;
+    --border: rgba(108,99,255,0.2);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAVBAR */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,15,26,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #7b74ff; transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    padding: 4rem 1.5rem 3rem;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(108,99,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: rgba(108,99,255,0.15);
+    border: 1px solid rgba(108,99,255,0.35);
+    color: var(--accent2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 1.2rem;
+  }
+
+  .hero h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 480px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* SEARCH & FILTER */
+  .toolbar {
+    padding: 1.5rem 1.5rem 1rem;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px 10px 42px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box input::placeholder { color: var(--muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  .filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+  }
+  .tag:hover, .tag.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(108,99,255,0.1);
+  }
+
+  /* GAME GRID */
+  .section-header {
+    padding: 0.5rem 1.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: '';
+    width: 3px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 0 1.5rem 2rem;
+  }
+
+  .game-card {
+    background: var(--card);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    group: true;
+  }
+
+  .game-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(108,99,255,0.5);
+    box-shadow: 0 8px 32px rgba(108,99,255,0.2);
+    background: var(--card-hover);
+  }
+
+  .game-thumb {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+    background: var(--surface);
+  }
+
+  .game-thumb-placeholder {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--card-hover) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    position: relative;
+  }
+
+  .game-card:hover .play-overlay {
+    opacity: 1;
+  }
+
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: 16/9;
+    background: rgba(108,99,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .play-btn-big {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .game-info {
+    padding: 12px 14px;
+  }
+
+  .game-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .game-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .game-genre {
+    font-size: 0.72rem;
+    color: var(--accent2);
+    background: rgba(0,229,255,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .game-plays {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  /* FEATURED */
+  .featured-card {
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 0 1.5rem 2rem;
+  }
+
+  @media (max-width: 600px) {
+    .featured-card { grid-template-columns: 1fr; }
+  }
+
+  .featured-card:hover {
+    border-color: rgba(108,99,255,0.5);
+    box-shadow: 0 8px 40px rgba(108,99,255,0.25);
+  }
+
+  .featured-thumb {
+    width: 100%;
+    aspect-ratio: 16/10;
+    background: linear-gradient(135deg, #1a1060 0%, #0a2040 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .featured-thumb::after {
+    content: 'FEATURED';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #FFD700;
+    background: rgba(255,215,0,0.15);
+    border: 1px solid rgba(255,215,0,0.4);
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  .featured-info {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .featured-info h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .featured-info p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .featured-info .btn-primary {
+    align-self: flex-start;
+    padding: 10px 22px;
+    font-size: 0.9rem;
+  }
+
+  /* MODAL / GAME PLAYER */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.95);
+    flex-direction: column;
+  }
+  .modal.open { display: flex; }
+
+  .modal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #0D0F1A;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .modal-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .game-frame-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #gameFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* ADMIN PANEL */
+  .admin-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0,0,0,0.8);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .admin-modal.open { display: flex; }
+
+  .admin-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .admin-box h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+    color: var(--accent2);
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--accent); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-group select option { background: var(--card); }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 1.2rem;
+  }
+
+  .emoji-picker {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .emoji-opt {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    cursor: pointer;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .emoji-opt:hover, .emoji-opt.selected {
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.15);
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty-state h3 { font-size: 1rem; margin-bottom: 0.5rem; color: var(--text); }
+  .empty-state p { font-size: 0.85rem; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    color: var(--text);
+    z-index: 9999;
+    transition: transform 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* MOBILE */
+  @media (max-width: 480px) {
+    .game-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 1rem 2rem; }
+    .toolbar { padding: 1rem; }
+    .section-header { padding: 0.5rem 1rem 0.75rem; }
+    .featured-card { margin: 0 1rem 2rem; }
+    nav { padding: 0 1rem; }
+    .hero { padding: 2.5rem 1rem 2rem; }
+  }
+
+  @media (max-width: 360px) {
+    .game-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.05);
+  }
+  .upload-zone p { color: var(--muted); font-size: 0.82rem; margin-top: 6px; }
+  #fileInput { display: none; }
+
+  .game-card-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: rgba(255,107,107,0.85);
+    border: none;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .edit-mode .game-card-delete { display: flex; }
+  .edit-mode .game-card:hover { transform: none; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">GAME<span style="color:var(--accent2)">HUB</span></div>
+  <div class="nav-actions">
+    <button class="btn btn-outline" id="editModeBtn" onclick="toggleEditMode()">✎ Sửa</button>
+    <button class="btn btn-primary" onclick="openAdmin()">+ Thêm Game</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="scanlines"></div>
+  <div class="hero-badge">🎮 Free Online Games</div>
+  <h1>Chơi Game<br><span>Trực Tuyến Miễn Phí</span></h1>
+  <p>Bộ sưu tập game HTML5 — chạy mượt trên laptop, PC và điện thoại Android. Không cần cài đặt.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num" id="totalGames">0</div>
+      <div class="stat-label">Trò Chơi</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">HTML5</div>
+      <div class="stat-label">Platform</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Miễn Phí</div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH & FILTER -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Tìm game..." id="searchInput" oninput="filterGames()">
+  </div>
+  <div class="filter-tags">
+    <button class="tag active" onclick="filterByTag(this,'all')">Tất Cả</button>
+    <button class="tag" onclick="filterByTag(this,'action')">Action</button>
+    <button class="tag" onclick="filterByTag(this,'puzzle')">Puzzle</button>
+    <button class="tag" onclick="filterByTag(this,'arcade')">Arcade</button>
+    <button class="tag" onclick="filterByTag(this,'racing')">Racing</button>
+    <button class="tag" onclick="filterByTag(this,'strategy')">Strategy</button>
+    <button class="tag" onclick="filterByTag(this,'other')">Khác</button>
+  </div>
+</div>
+
+<!-- GAME GRID -->
+<div class="section-header">
+  <div class="section-title">Tất Cả Game</div>
+  <span id="gameCount" style="font-size:0.8rem;color:var(--muted)"></span>
+</div>
+
+<div class="game-grid" id="gameGrid">
+  <!-- games will render here -->
+</div>
+
+<div id="emptyState" class="empty-state" style="display:none;">
+  <div class="empty-icon">🎮</div>
+  <h3>Chưa có game nào</h3>
+  <p>Nhấn <strong style="color:var(--accent)">+ Thêm Game</strong> để upload game HTML đầu tiên</p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="margin-bottom:6px; font-family:'Orbitron',monospace; font-size:0.9rem; color:var(--accent);">GAMEHUB</div>
+  Game HTML5 · Chạy mượt trên mọi thiết bị · Không quảng cáo
+</footer>
+
+<!-- GAME PLAYER MODAL -->
+<div class="modal" id="gameModal">
+  <div class="modal-nav">
+    <div class="modal-title" id="modalTitle">Loading...</div>
+    <div class="modal-actions">
+      <button class="icon-btn" title="Toàn màn hình" onclick="toggleFullscreen()">⛶</button>
+      <button class="icon-btn" title="Tải lại" onclick="reloadGame()">↺</button>
+      <button class="icon-btn" title="Đóng" onclick="closeGame()">✕</button>
+    </div>
+  </div>
+  <div class="game-frame-wrap">
+    <iframe id="gameFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" allow="fullscreen"></iframe>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="admin-modal" id="adminModal">
+  <div class="admin-box">
+    <h3>🎮 Thêm Game Mới</h3>
+
+    <div class="form-group">
+      <label>Tên Game *</label>
+      <input type="text" id="gameName" placeholder="VD: Super Jump, Snake Classic..." maxlength="50">
+    </div>
+
+    <div class="form-group">
+      <label>Thể Loại</label>
+      <select id="gameGenre">
+        <option value="arcade">Arcade</option>
+        <option value="action">Action</option>
+        <option value="puzzle">Puzzle</option>
+        <option value="racing">Racing</option>
+        <option value="strategy">Strategy</option>
+        <option value="other">Khác</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Mô Tả Ngắn</label>
+      <textarea id="gameDesc" placeholder="Mô tả ngắn về game..." rows="2"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Upload File HTML Game</label>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div style="font-size:1.8rem;">📁</div>
+        <p>Nhấn để chọn file .html hoặc kéo thả vào đây</p>
+        <p id="fileName" style="color:var(--accent);font-weight:500;"></p>
+      </div>
+      <input type="file" id="fileInput" accept=".html,.htm" onchange="handleFileSelect(event)">
+    </div>
+
+    <div class="form-group">
+      <label>Hoặc dán Link URL Game</label>
+      <input type="url" id="gameUrl" placeholder="https://example.com/game.html">
+    </div>
+
+    <div class="form-group">
+      <label>Chọn Icon Game</label>
+      <div class="emoji-picker" id="emojiPicker">
+        <div class="emoji-opt selected" data-emoji="🎮">🎮</div>
+        <div class="emoji-opt" data-emoji="🕹️">🕹️</div>
+        <div class="emoji-opt" data-emoji="⚔️">⚔️</div>
+        <div class="emoji-opt" data-emoji="🚀">🚀</div>
+        <div class="emoji-opt" data-emoji="🏆">🏆</div>
+        <div class="emoji-opt" data-emoji="💎">💎</div>
+        <div class="emoji-opt" data-emoji="🐉">🐉</div>
+        <div class="emoji-opt" data-emoji="🧩">🧩</div>
+        <div class="emoji-opt" data-emoji="🏎️">🏎️</div>
+        <div class="emoji-opt" data-emoji="⚽">⚽</div>
+        <div class="emoji-opt" data-emoji="🎯">🎯</div>
+        <div class="emoji-opt" data-emoji="🌟">🌟</div>
+        <div class="emoji-opt" data-emoji="🦊">🦊</div>
+        <div class="emoji-opt" data-emoji="🤖">🤖</div>
+        <div class="emoji-opt" data-emoji="🦄">🦄</div>
+        <div class="emoji-opt" data-emoji="🍎">🍎</div>
+        <div class="emoji-opt" data-emoji="💣">💣</div>
+        <div class="emoji-opt" data-emoji="🔫">🔫</div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="saveGame()" style="flex:1;">💾 Lưu Game</button>
+      <button class="btn btn-outline" onclick="closeAdmin()">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+let games = JSON.parse(localStorage.getItem('gamehub_games') || '[]');
+let selectedEmoji = '🎮';
+let selectedFile = null;
+let selectedFileContent = null;
+let currentFilter = 'all';
+let editMode = false;
+
+// Demo games if empty
+if (games.length === 0) {
+  games = [
+    { id: 1, name: 'Snake Classic', genre: 'arcade', desc: 'Trò chơi rắn cổ điển huyền thoại', emoji: '🐍', url: '', plays: 1204, builtin: 'snake' },
+    { id: 2, name: 'Breakout', genre: 'arcade', desc: 'Phá gạch kiếm điểm cao nhất', emoji: '🎯', url: '', plays: 892, builtin: 'breakout' },
+    { id: 3, name: 'Memory Cards', genre: 'puzzle', desc: 'Lật thẻ tìm cặp giống nhau', emoji: '🧩', url: '', plays: 567, builtin: 'memory' },
+  ];
+  localStorage.setItem('gamehub_games', JSON.stringify(games));
+}
+
+function renderGames() {
+  const grid = document.getElementById('gameGrid');
+  const empty = document.getElementById('emptyState');
+  const search = document.getElementById('searchInput').value.toLowerCase();
+
+  let filtered = games.filter(g => {
+    const matchSearch = g.name.toLowerCase().includes(search) || (g.desc||'').toLowerCase().includes(search);
+    const matchTag = currentFilter === 'all' || g.genre === currentFilter;
+    return matchSearch && matchTag;
+  });
+
+  document.getElementById('totalGames').textContent = games.length;
+  document.getElementById('gameCount').textContent = filtered.length + ' game';
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = filtered.map(g => `
+      <div class="game-card" onclick="playGame(${g.id})">
+        <button class="game-card-delete" onclick="event.stopPropagation();deleteGame(${g.id})" title="Xóa">✕</button>
+        <div class="game-thumb-placeholder">
+          ${g.emoji}
+          <div class="play-overlay">
+            <div class="play-btn-big">▶</div>
+          </div>
+        </div>
+        <div class="game-info">
+          <div class="game-title">${g.name}</div>
+          <div class="game-meta">
+            <span class="game-genre">${genreLabel(g.genre)}</span>
+            <span class="game-plays">▶ ${(g.plays||0).toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function genreLabel(g) {
+  const map = { arcade:'Arcade', action:'Action', puzzle:'Puzzle', racing:'Racing', strategy:'Strategy', other:'Khác' };
+  return map[g] || g;
+}
+
+function filterGames() { renderGames(); }
+
+function filterByTag(el, tag) {
+  currentFilter = tag;
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderGames();
+}
+
+function playGame(id) {
+  const g = games.find(x => x.id === id);
+  if (!g) return;
+  g.plays = (g.plays || 0) + 1;
+  localStorage.setItem('gamehub_games', JSON.stringify(games));
+  renderGames();
+
+  document.getElementById('modalTitle').textContent = g.emoji + ' ' + g.name;
+  document.getElementById('gameModal').classList.add('open');
+
+  const frame = document.getElementById('gameFrame');
+  if (g.builtin) {
+    frame.srcdoc = getBuiltinGame(g.builtin);
+  } else if (g.fileContent) {
+    frame.srcdoc = g.fileContent;
+  } else if (g.url) {
+    frame.src = g.url;
+  } else {
+    frame.srcdoc = '<div style="color:white;padding:2rem;text-align:center;font-family:sans-serif"><h2>Game chưa có file</h2><p style="color:#888;margin-top:1rem">Vui lòng upload file HTML khi thêm game.</p></div>';
+  }
+}
+
+function closeGame() {
+  document.getElementById('gameModal').classList.remove('open');
+  document.getElementById('gameFrame').src = 'about:blank';
+  document.getElementById('gameFrame').srcdoc = '';
+}
+
+function reloadGame() {
+  const f = document.getElementById('gameFrame');
+  const src = f.src;
+  const doc = f.srcdoc;
+  f.srcdoc = '';
+  f.src = 'about:blank';
+  setTimeout(() => {
+    if (doc) f.srcdoc = doc;
+    else f.src = src;
+  }, 100);
+}
+
+function toggleFullscreen() {
+  const wrap = document.getElementById('gameModal');
+  if (!document.fullscreenElement) {
+    wrap.requestFullscreen && wrap.requestFullscreen();
+  } else {
+    document.exitFullscreen && document.exitFullscreen();
+  }
+}
+
+function openAdmin() {
+  document.getElementById('adminModal').classList.add('open');
+}
+
+function closeAdmin() {
+  document.getElementById('adminModal').classList.remove('open');
+  document.getElementById('gameName').value = '';
+  document.getElementById('gameDesc').value = '';
+  document.getElementById('gameUrl').value = '';
+  document.getElementById('fileName').textContent = '';
+  selectedFile = null;
+  selectedFileContent = null;
+  selectedEmoji = '🎮';
+  document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+  document.querySelector('[data-emoji="🎮"]').classList.add('selected');
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  selectedFile = file;
+  document.getElementById('fileName').textContent = '✓ ' + file.name;
+  const reader = new FileReader();
+  reader.onload = ev => { selectedFileContent = ev.target.result; };
+  reader.readAsText(file);
+}
+
+document.getElementById('uploadZone').addEventListener('dragover', e => {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.add('dragover');
+});
+document.getElementById('uploadZone').addEventListener('dragleave', () => {
+  document.getElementById('uploadZone').classList.remove('dragover');
+});
+document.getElementById('uploadZone').addEventListener('drop', e => {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm'))) {
+    selectedFile = file;
+    document.getElementById('fileName').textContent = '✓ ' + file.name;
+    const reader = new FileReader();
+    reader.onload = ev => { selectedFileContent = ev.target.result; };
+    reader.readAsText(file);
+  }
+});
+
+document.querySelectorAll('.emoji-opt').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedEmoji = el.dataset.emoji;
+  });
+});
+
+function saveGame() {
+  const name = document.getElementById('gameName').value.trim();
+  const url = document.getElementById('gameUrl').value.trim();
+  if (!name) { showToast('⚠️ Vui lòng nhập tên game'); return; }
+  if (!selectedFileContent && !url) { showToast('⚠️ Vui lòng upload file hoặc nhập URL'); return; }
+
+  const newGame = {
+    id: Date.now(),
+    name,
+    genre: document.getElementById('gameGenre').value,
+    desc: document.getElementById('gameDesc').value.trim(),
+    emoji: selectedEmoji,
+    url: url || '',
+    fileContent: selectedFileContent || null,
+    plays: 0
+  };
+
+  games.unshift(newGame);
+  const toSave = games.map(g => ({...g, fileContent: g.fileContent}));
+  try { localStorage.setItem('gamehub_games', JSON.stringify(toSave)); } catch(e) {}
+  renderGames();
+  closeAdmin();
+  showToast('✅ Đã thêm game: ' + name);
+}
+
+function deleteGame(id) {
+  if (!confirm('Xóa game này?')) return;
+  games = games.filter(g => g.id !== id);
+  localStorage.setItem('gamehub_games', JSON.stringify(games));
+  renderGames();
+  showToast('🗑️ Đã xóa game');
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  document.getElementById('editModeBtn').textContent = editMode ? '✓ Xong' : '✎ Sửa';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// BUILT-IN GAMES
+function getBuiltinGame(name) {
+  if (name === 'snake') return snakeGame();
+  if (name === 'breakout') return breakoutGame();
+  if (name === 'memory') return memoryGame();
+  return '';
+}
+
+function snakeGame() {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Snake</title><style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0D0F1A;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:monospace;color:#fff;touch-action:none}
+h1{font-size:1.5rem;margin-bottom:10px;color:#6C63FF;letter-spacing:3px}
+#score{font-size:1rem;color:#00E5FF;margin-bottom:10px}
+canvas{border:2px solid #6C63FF;border-radius:8px;background:#1A1D2E}
+#msg{margin-top:12px;font-size:0.9rem;color:#888}
+.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:16px;max-width:180px}
+.ctl-btn{padding:12px;background:#1A1D2E;border:1px solid #333;border-radius:8px;color:#fff;font-size:1.2rem;cursor:pointer;text-align:center}
+.ctl-btn:active{background:#6C63FF}
+</style></head><body>
+<h1>🐍 SNAKE</h1>
+<div id="score">Score: 0 | Best: 0</div>
+<canvas id="c" width="320" height="320"></canvas>
+<div id="msg">Nhấn phím mũi tên hoặc nút bên dưới để chơi</div>
+<div class="controls">
+  <div></div><button class="ctl-btn" onclick="dir={x:0,y:-1}">▲</button><div></div>
+  <button class="ctl-btn" onclick="dir={x:-1,y:0}">◀</button>
+  <button class="ctl-btn" onclick="dir={x:0,y:1}">▼</button>
+  <button class="ctl-btn" onclick="dir={x:1,y:0}">▶</button>
+</div>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d'),S=20,W=16;
+let snake=[{x:8,y:8}],dir={x:1,y:0},food={x:5,y:5},score=0,best=0,alive=true,loop;
+function rndFood(){food={x:Math.floor(Math.random()*W),y:Math.floor(Math.random()*W)};}
+function draw(){
+  ctx.fillStyle='#1A1D2E';ctx.fillRect(0,0,320,320);
+  ctx.fillStyle='#FF6B6B';ctx.beginPath();ctx.arc(food.x*S+S/2,food.y*S+S/2,7,0,Math.PI*2);ctx.fill();
+  snake.forEach((p,i)=>{ctx.fillStyle=i===0?'#6C63FF':'#4a43cc';ctx.beginPath();ctx.roundRect(p.x*S+1,p.y*S+1,S-2,S-2,4);ctx.fill();});
+}
+function tick(){
+  if(!alive)return;
+  const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  if(h.x<0||h.x>=W||h.y<0||h.y>=W||snake.some(s=>s.x===h.x&&s.y===s.y&&snake.indexOf(s)>0)){
+    alive=false;document.getElementById('msg').textContent='Game Over! Chạm màn hình để chơi lại';
+    c.onclick=()=>{snake=[{x:8,y:8}];dir={x:1,y:0};score=0;alive=true;rndFood();c.onclick=null;document.getElementById('msg').textContent='';};return;}
+  snake.unshift(h);
+  if(h.x===food.x&&h.y===food.y){score++;if(score>best)best=score;document.getElementById('score').textContent='Score: '+score+' | Best: '+best;rndFood();}
+  else snake.pop();
+  draw();
+}
+document.addEventListener('keydown',e=>{const m={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}};if(m[e.key]&&!(m[e.key].x===-dir.x&&m[e.key].y===-dir.y))dir=m[e.key];});
+rndFood();draw();setInterval(tick,150);
+<\/script></body></html>`;
+}
+
+function breakoutGame() {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Breakout</title><style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0D0F1A;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:monospace;color:#fff;touch-action:none}
+h1{font-size:1.3rem;color:#6C63FF;letter-spacing:3px;margin-bottom:6px}
+#score{color:#00E5FF;font-size:0.9rem;margin-bottom:8px}
+canvas{border:2px solid #6C63FF;border-radius:8px;cursor:none}
+</style></head><body>
+<h1>🎯 BREAKOUT</h1>
+<div id="score">Score: 0</div>
+<canvas id="c" width="360" height="440"></canvas>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let bx=180,by=400,br=8,vx=3,vy=-4,px=140,pw=80,ph=10,score=0,alive=true;
+const bricks=[];
+for(let r=0;r<5;r++)for(let c=0;c<8;c++)bricks.push({x:10+c*43,y:30+r*28,w:38,h:20,alive:true,color:['#FF6B6B','#FFD700','#6C63FF','#00E5FF','#4CAF50'][r]});
+function draw(){
+  ctx.fillStyle='#1A1D2E';ctx.fillRect(0,0,360,440);
+  bricks.filter(b=>b.alive).forEach(b=>{ctx.fillStyle=b.color;ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,3);ctx.fill();});
+  ctx.fillStyle='#6C63FF';ctx.beginPath();ctx.roundRect(px,425,pw,ph,5);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fill();
+  if(!alive){ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(0,0,360,440);ctx.fillStyle='#FF6B6B';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.fillText('GAME OVER',180,200);ctx.fillStyle='#888';ctx.font='14px monospace';ctx.fillText('Click để chơi lại',180,240);}
+}
+function update(){
+  if(!alive)return;
+  bx+=vx;by+=vy;
+  if(bx<br||bx>360-br)vx=-vx;
+  if(by<br)vy=-vy;
+  if(by>440){alive=false;return;}
+  if(by+br>425&&by+br<440&&bx>px&&bx<px+pw)vy=-Math.abs(vy);
+  bricks.filter(b=>b.alive).forEach(b=>{if(bx+br>b.x&&bx-br<b.x+b.w&&by+br>b.y&&by-br<b.y+b.h){b.alive=false;vy=-vy;score++;document.getElementById('score').textContent='Score: '+score;}});
+  draw();
+}
+cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();px=e.clientX-r.left-pw/2;px=Math.max(0,Math.min(360-pw,px));});
+cv.addEventListener('touchmove',e=>{e.preventDefault();const r=cv.getBoundingClientRect();px=e.touches[0].clientX-r.left-pw/2;px=Math.max(0,Math.min(360-pw,px));},{passive:false});
+cv.addEventListener('click',()=>{if(!alive){bricks.forEach(b=>b.alive=true);bx=180;by=400;vx=3;vy=-4;score=0;document.getElementById('score').textContent='Score: 0';alive=true;}});
+draw();setInterval(update,16);
+<\/script></body></html>`;
+}
+
+function memoryGame() {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Memory</title><style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0D0F1A;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;color:#fff;padding:1rem}
+h1{font-size:1.3rem;color:#6C63FF;letter-spacing:2px;margin-bottom:8px}
+#info{color:#00E5FF;font-size:0.85rem;margin-bottom:14px}
+#grid{display:grid;grid-template-columns:repeat(4,70px);gap:10px}
+.card{width:70px;height:70px;border-radius:10px;border:2px solid #333;background:#1A1D2E;display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer;transition:all 0.2s;user-select:none}
+.card.flipped,.card.matched{background:#6C63FF;border-color:#6C63FF}
+.card.matched{background:#4CAF50;border-color:#4CAF50}
+#win{display:none;text-align:center;color:#FFD700;font-size:1.2rem;margin-top:16px}
+button{margin-top:12px;padding:8px 20px;background:#6C63FF;border:none;border-radius:8px;color:#fff;font-family:monospace;font-size:0.9rem;cursor:pointer}
+</style></head><body>
+<h1>🧩 MEMORY</h1>
+<div id="info">Lật thẻ: 0 | Tìm được: 0/8</div>
+<div id="grid"></div>
+<div id="win">🎉 Tuyệt vời! Bạn đã thắng!</div>
+<button onclick="init()">Chơi Lại</button>
+<script>
+const emojis=['🦊','🐉','🚀','💎','⚡','🌟','🎯','🔥'];
+let cards=[],flipped=[],matched=0,moves=0,lock=false;
+function init(){
+  const arr=[...emojis,...emojis].sort(()=>Math.random()-0.5);
+  cards=arr.map((e,i)=>({id:i,emoji:e,flipped:false,matched:false}));
+  flipped=[];matched=0;moves=0;lock=false;
+  document.getElementById('win').style.display='none';
+  render();
+}
+function render(){
+  document.getElementById('info').textContent='Lật thẻ: '+moves+' | Tìm được: '+matched+'/8';
+  const g=document.getElementById('grid');
+  g.innerHTML=cards.map(c=>`<div class="card${c.flipped||c.matched?' flipped':''}${c.matched?' matched':''}" onclick="flip(${c.id})">${c.flipped||c.matched?c.emoji:''}</div>`).join('');
+}
+function flip(id){
+  if(lock||cards[id].matched||cards[id].flipped)return;
+  cards[id].flipped=true;flipped.push(id);render();
+  if(flipped.length===2){
+    moves++;lock=true;
+    if(cards[flipped[0]].emoji===cards[flipped[1]].emoji){
+      cards[flipped[0]].matched=cards[flipped[1]].matched=true;
+      matched++;flipped=[];lock=false;
+      if(matched===8){document.getElementById('win').style.display='block';}
+    }else{
+      setTimeout(()=>{cards[flipped[0]].flipped=cards[flipped[1]].flipped=false;flipped=[];lock=false;render();},900);
+    }
+    render();
+  }
+}
+init();
+<\/script></body></html>`;
+}
+
+// Keyboard close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeGame();
+});
+
+renderGames();
+</script>
+</body>
+</html>

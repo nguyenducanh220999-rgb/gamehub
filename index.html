@@ -35,6 +35,10 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                 <span class="text-slate-300">Server: ONLINE</span>
             </div>
+            <div class="hidden sm:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono" title="Tổng lượt thiết bị unique ghé thăm">
+                <i class="fa-solid fa-globe text-blue-400 text-xs"></i>
+                <span class="text-slate-300">Visitors: <span id="visitorCount" class="text-emerald-400 font-bold">...</span></span>
+            </div>
             <span class="bg-blue-950/80 border border-blue-800/60 text-blue-400 px-3.5 py-1.5 rounded-full text-xs font-semibold font-orbitron">gamhub.store</span>
         </div>
     </header>
@@ -362,7 +366,7 @@
     <!-- FIREBASE COMMENT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyALMfE9AfEaRGSgSp6IghU5Cu9uIs54-ac",
@@ -375,6 +379,27 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // VISITOR COUNTER
+        const visitorCountEl = document.getElementById('visitorCount');
+        const VISITOR_KEY = 'gamhub_visited_v1';
+        const statsRef = doc(db, "stats", "visitors");
+
+        // Đọc tổng visitor hiện tại
+        const statsSnap = await getDoc(statsRef);
+        if (statsSnap.exists()) {
+            visitorCountEl.textContent = statsSnap.data().total.toLocaleString();
+        }
+
+        // Nếu thiết bị này chưa từng vào → tăng counter
+        if (!localStorage.getItem(VISITOR_KEY)) {
+            localStorage.setItem(VISITOR_KEY, '1');
+            try {
+                await setDoc(statsRef, { total: increment(1) }, { merge: true });
+                const updated = await getDoc(statsRef);
+                visitorCountEl.textContent = updated.data().total.toLocaleString();
+            } catch(e) {}
+        }
 
         const input = document.getElementById('commentInput');
         const sendBtn = document.getElementById('sendComment');

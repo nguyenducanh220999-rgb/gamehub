@@ -12,354 +12,35 @@
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
         .neon-glow-blue { box-shadow: 0 0 15px rgba(59,130,246,0.4); border-color: rgba(59,130,246,0.6); }
-        .neon-text-blue { text-shadow: 0 0 8px rgba(59,130,246,0.6); }
-        .neon-text-purple { text-shadow: 0 0 8px rgba(168,85,247,0.6); }
-        canvas, button { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
 
-    <!-- HEADER -->
     <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40 px-4 md:px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <i class="fa-solid fa-gamepad text-white text-xl"></i>
             </div>
             <div>
-                <span class="text-xs text-blue-400 font-mono-tech tracking-wider uppercase font-bold">Arcade Portal</span>
                 <h1 class="text-lg md:text-xl font-black font-orbitron tracking-widest text-white">GAM<span class="text-blue-500">HUB</span></h1>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <div class="hidden sm:flex items-center gap-1 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span class="text-slate-300">Server: ONLINE</span>
-            </div>
-            <span class="bg-blue-950/80 border border-blue-800/60 text-blue-400 px-3.5 py-1.5 rounded-full text-xs font-semibold font-orbitron">gamhub.store</span>
-        </div>
     </header>
 
-    <!-- MAIN -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
-
-        <!-- COMMENT BOX -->
         <div class="space-y-4">
-            <h3 class="text-lg font-bold font-orbitron tracking-wide text-slate-300 flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded bg-blue-500"></span> 💬 BẢNG TIN CỘNG ĐỒNG
-            </h3>
+            <h3 class="text-lg font-bold font-orbitron tracking-wide text-slate-300">💬 BẢNG TIN CỘNG ĐỒNG</h3>
             <div class="bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl border border-slate-800/80 p-5 md:p-6 space-y-5">
-                <div class="space-y-3">
-                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-pen text-blue-400"></i> Để lại lời nhắn ẩn danh
-                    </label>
-                    <textarea id="commentInput" placeholder="Viết gì đó... góp ý game, yêu cầu game mới 👋" maxlength="200" rows="3" class="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 resize-none outline-none transition"></textarea>
-                    <div class="flex items-center justify-between">
-                        <span id="charCount" class="text-xs text-slate-500 font-mono">0 / 200</span>
-                        <button id="sendComment" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-lg text-sm flex items-center gap-2 transition active:scale-95">
-                            <i class="fa-solid fa-paper-plane text-xs"></i> Gửi ẩn danh
-                        </button>
-                    </div>
-                    <p class="text-xs text-slate-600 italic"><i class="fa-solid fa-shield-halved mr-1 text-slate-500"></i>Mọi tin nhắn đều ẩn danh. Không chia sẻ thông tin cá nhân.</p>
+                <textarea id="commentInput" placeholder="Viết gì đó... góp ý game, yêu cầu game mới 👋" maxlength="200" rows="3" class="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition"></textarea>
+                <div class="flex items-center justify-between">
+                    <span id="charCount" class="text-xs text-slate-500 font-mono">0 / 200</span>
+                    <button id="sendComment" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-lg text-sm transition active:scale-95">Gửi ẩn danh</button>
                 </div>
-                <div class="border-t border-slate-800"></div>
-                <div class="space-y-3">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-comments text-purple-400"></i> 5 Tin nhắn gần nhất
-                    </span>
-                    <div id="commentsList">
-                        <div class="flex items-center gap-2 text-slate-500 text-sm py-4 justify-center">
-                            <i class="fa-solid fa-spinner animate-spin"></i> Đang tải...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- GAME GRID -->
-        <div class="space-y-4" id="game-section">
-            <h3 class="text-lg font-bold font-orbitron tracking-wide text-slate-300 flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded bg-blue-500"></span> DANH SÁCH TRÒ CHƠI
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- GAME 1 -->
-                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-blue-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
-                    <div>
-                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
-                            <i class="fa-solid fa-rocket text-5xl text-blue-500/80 group-hover:scale-110 group-hover:rotate-12 transition duration-300 z-10"></i>
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
-                            <div class="absolute w-1 h-1 bg-white rounded-full top-10 left-10 opacity-30 animate-pulse"></div>
-                            <div class="absolute w-1 h-1 bg-white rounded-full top-24 left-44 opacity-60"></div>
-                            <div class="absolute w-1.5 h-1.5 bg-blue-400 rounded-full top-32 left-20 opacity-40 animate-ping"></div>
-                        </div>
-                        <div class="p-5 space-y-2">
-                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-blue-400 transition">Space Storm</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Lái chiến cơ chiến đấu ngoài vũ trụ. Bắn hạ kẻ địch xâm lăng và né tránh bão đạn nguy hiểm.</p>
-                        </div>
-                    </div>
-                    <div class="p-5 pt-0">
-                        <button onclick="startGame('space')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
-                            <i class="fa-solid fa-play text-xs"></i> Chơi ngay
-                        </button>
-                    </div>
-                </div>
-                <!-- GAME 2 -->
-                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-purple-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
-                    <div>
-                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
-                            <i class="fa-solid fa-person-running text-5xl text-purple-500/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
-                            <div class="absolute bottom-0 w-full h-10 border-t border-purple-900/50 flex flex-col gap-1 overflow-hidden opacity-30">
-                                <div class="w-full h-0.5 bg-purple-500"></div>
-                                <div class="w-full h-1 bg-purple-600"></div>
-                            </div>
-                        </div>
-                        <div class="p-5 space-y-2">
-                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-purple-400 transition">Cyber Runner</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Game nhảy né chướng ngại vật phong cách Neon Cyberpunk cực kỳ cuốn hút. Bạn chạy được bao xa?</p>
-                        </div>
-                    </div>
-                    <div class="p-5 pt-0">
-                        <button onclick="startGame('runner')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
-                            <i class="fa-solid fa-play text-xs"></i> Chơi ngay
-                        </button>
-                    </div>
-                </div>
-                <!-- GAME 3 -->
-                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-emerald-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
-                    <div>
-                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
-                            <i class="fa-solid fa-border-all text-5xl text-emerald-500/80 group-hover:scale-110 transition duration-300 z-10"></i>
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
-                            <div class="absolute top-8 flex gap-1">
-                                <div class="w-6 h-3 bg-red-500 rounded-sm opacity-50"></div>
-                                <div class="w-6 h-3 bg-yellow-500 rounded-sm opacity-50 animate-pulse"></div>
-                                <div class="w-6 h-3 bg-emerald-500 rounded-sm opacity-50"></div>
-                            </div>
-                        </div>
-                        <div class="p-5 space-y-2">
-                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-emerald-400 transition">Retro Breaker</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Đập bóng phá vỡ các mảng gạch đầy màu sắc cổ điển. Thể loại game đập gạch gây nghiện cực cao.</p>
-                        </div>
-                    </div>
-                    <div class="p-5 pt-0">
-                        <button onclick="startGame('breaker')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
-                            <i class="fa-solid fa-play text-xs"></i> Chơi ngay
-                        </button>
-                    </div>
-                </div>
+                <div id="commentsList" class="space-y-3 pt-4 border-t border-slate-800"></div>
             </div>
         </div>
     </main>
 
-    <!-- GAME CABINET -->
-    <div id="gameCabinet" class="hidden fixed inset-0 bg-slate-950/95 z-50 flex flex-col justify-between overflow-y-auto">
-        <div class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <button onclick="closeCabinet()" class="text-slate-400 hover:text-white transition w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </button>
-                <h3 id="cabinetGameTitle" class="font-bold font-orbitron text-blue-400 text-sm md:text-base">Arcade Cabin</h3>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="bg-black/40 border border-slate-800 px-3 py-1 rounded text-xs font-mono">Score: <span id="gameScore" class="text-emerald-400 font-bold">0</span></div>
-                <div class="bg-black/40 border border-slate-800 px-3 py-1 rounded text-xs font-mono hidden md:block">Highscore: <span id="gameHighScore" class="text-yellow-400 font-bold">0</span></div>
-            </div>
-        </div>
-        <div class="flex-1 flex flex-col items-center justify-center p-2 md:p-4">
-            <div class="relative w-full max-w-2xl aspect-[16/10] md:aspect-[16/9] bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl">
-                <canvas id="gameCanvas" class="w-full h-full bg-black"></canvas>
-                <div id="gameOverOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                    <h4 class="text-3xl md:text-5xl font-black font-orbitron text-red-500 tracking-wider mb-2 animate-bounce">GAME OVER</h4>
-                    <p class="text-slate-400 text-sm mb-6">Bạn đã chơi rất tốt! Hãy thử lại một lần nữa.</p>
-                    <button onclick="restartActiveGame()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 transition active:scale-95 shadow-lg shadow-blue-500/30">
-                        <i class="fa-solid fa-rotate-right"></i> Chơi lại
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="bg-slate-900 border-t border-slate-800 p-4 flex flex-col gap-3">
-            <div class="flex items-center justify-between text-xs text-slate-500 font-mono">
-                <span><i class="fa-solid fa-circle-info mr-1"></i> Điều khiển di động: Chạm các nút dưới hoặc kéo/chạm trực tiếp trên màn hình</span>
-                <span class="hidden md:inline">Phím máy tính: Arrow Keys / Space</span>
-            </div>
-            <div class="flex items-center justify-center gap-6 py-2">
-                <div class="flex gap-4">
-                    <button id="btnLeft" class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 active:bg-blue-600 text-white text-xl flex items-center justify-center transition select-none"><i class="fa-solid fa-arrow-left"></i></button>
-                    <button id="btnRight" class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 active:bg-blue-600 text-white text-xl flex items-center justify-center transition select-none"><i class="fa-solid fa-arrow-right"></i></button>
-                </div>
-                <div>
-                    <button id="btnAction" class="w-24 h-14 rounded-xl bg-red-600 border border-red-500 active:bg-red-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition select-none uppercase shadow-lg shadow-red-600/20">
-                        <i class="fa-solid fa-crosshairs text-xs"></i> <span>Hành động</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 mt-12 px-4">
-        <p class="text-slate-600">© 2026 GamHub.Store. All rights reserved.</p>
-    </footer>
-
-    <!-- GAME LOGIC -->
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const gameCabinet = document.getElementById('gameCabinet');
-        const cabinetGameTitle = document.getElementById('cabinetGameTitle');
-        const gameScoreText = document.getElementById('gameScore');
-        const gameHighScoreText = document.getElementById('gameHighScore');
-        const gameOverOverlay = document.getElementById('gameOverOverlay');
-
-        let audioCtx = null;
-        function playSound(type) {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                if (type === 'laser') { osc.type='sawtooth'; osc.frequency.setValueAtTime(800,now); osc.frequency.exponentialRampToValueAtTime(100,now+0.15); gain.gain.setValueAtTime(0.15,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.15); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.15); }
-                else if (type === 'explosion') { osc.type='triangle'; osc.frequency.setValueAtTime(150,now); osc.frequency.exponentialRampToValueAtTime(30,now+0.3); gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.35); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.35); }
-                else if (type === 'jump') { osc.type='sine'; osc.frequency.setValueAtTime(200,now); osc.frequency.exponentialRampToValueAtTime(600,now+0.2); gain.gain.setValueAtTime(0.2,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.2); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.2); }
-                else if (type === 'hit') { osc.type='square'; osc.frequency.setValueAtTime(400,now); osc.frequency.setValueAtTime(600,now+0.08); gain.gain.setValueAtTime(0.15,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.15); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.15); }
-            } catch(e) {}
-        }
-
-        let activeGame = null, score = 0, isGameOver = false, keys = {};
-        let highScores = { space: 0, runner: 0, breaker: 0 };
-        window.addEventListener('keydown', e => { keys[e.code] = true; });
-        window.addEventListener('keyup', e => { keys[e.code] = false; });
-
-        const btnLeft = document.getElementById('btnLeft');
-        const btnRight = document.getElementById('btnRight');
-        const btnAction = document.getElementById('btnAction');
-        let touchState = { left: false, right: false, action: false };
-        btnLeft.addEventListener('touchstart', e => { e.preventDefault(); touchState.left = true; });
-        btnLeft.addEventListener('touchend', () => { touchState.left = false; });
-        btnRight.addEventListener('touchstart', e => { e.preventDefault(); touchState.right = true; });
-        btnRight.addEventListener('touchend', () => { touchState.right = false; });
-        btnAction.addEventListener('touchstart', e => { e.preventDefault(); touchState.action = true; });
-        btnAction.addEventListener('touchend', () => { touchState.action = false; });
-        btnLeft.addEventListener('mousedown', () => { touchState.left = true; });
-        btnLeft.addEventListener('mouseup', () => { touchState.left = false; });
-        btnRight.addEventListener('mousedown', () => { touchState.right = true; });
-        btnRight.addEventListener('mouseup', () => { touchState.right = false; });
-        btnAction.addEventListener('mousedown', () => { touchState.action = true; });
-        btnAction.addEventListener('mouseup', () => { touchState.action = false; });
-
-        function setupCanvasSize() { canvas.width = 1280; canvas.height = 720; }
-
-        function startGame(gameKey) {
-            setupCanvasSize(); activeGame = gameKey; score = 0; isGameOver = false;
-            gameScoreText.innerText = 0; gameHighScoreText.innerText = highScores[gameKey] || 0;
-            gameOverOverlay.classList.add('hidden'); gameCabinet.classList.remove('hidden');
-            if (gameKey === 'space') { cabinetGameTitle.innerText = "🌌 SPACE STORM"; btnAction.querySelector('span').innerText = "BẮN"; initSpaceGame(); }
-            else if (gameKey === 'runner') { cabinetGameTitle.innerText = "🏃 CYBER RUNNER"; btnAction.querySelector('span').innerText = "NHẢY"; initRunnerGame(); }
-            else if (gameKey === 'breaker') { cabinetGameTitle.innerText = "🧱 RETRO BREAKER"; btnAction.querySelector('span').innerText = "KÍCH BÓNG"; initBreakerGame(); }
-        }
-        function closeCabinet() { gameCabinet.classList.add('hidden'); isGameOver = true; activeGame = null; }
-        function restartActiveGame() { startGame(activeGame); }
-        function setGameOver() { isGameOver = true; gameOverOverlay.classList.remove('hidden'); playSound('explosion'); if (score > highScores[activeGame]) { highScores[activeGame] = score; gameHighScoreText.innerText = score; } }
-
-        // SPACE STORM
-        let player, playerLasers, enemies, spaceStars, lastLaserTime = 0;
-        function initSpaceGame() {
-            player = { x: canvas.width/2, y: canvas.height-100, width: 60, height: 50, speed: 10 };
-            playerLasers = []; enemies = []; spaceStars = [];
-            for (let i = 0; i < 50; i++) spaceStars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2+1, speed: Math.random()*2+0.5 });
-            lastLaserTime = 0; requestAnimationFrame(spaceLoop);
-        }
-        function spaceLoop() {
-            if (isGameOver || activeGame !== 'space') return;
-            if (keys['ArrowLeft'] || touchState.left) player.x = Math.max(player.width, player.x - player.speed);
-            if (keys['ArrowRight'] || touchState.right) player.x = Math.min(canvas.width - player.width, player.x + player.speed);
-            if (keys['Space'] || touchState.action) { const now = performance.now(); if (now - lastLaserTime > 180) { playerLasers.push({ x: player.x, y: player.y-30, speed: 14 }); playSound('laser'); lastLaserTime = now; } }
-            ctx.fillStyle = '#02020a'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = '#ffffff';
-            spaceStars.forEach(s => { s.y += s.speed; if (s.y > canvas.height) s.y = 0; ctx.fillRect(s.x, s.y, s.size, s.size); });
-            ctx.save(); ctx.translate(player.x, player.y); ctx.shadowBlur=15; ctx.shadowColor='#3b82f6'; ctx.fillStyle='#3b82f6'; ctx.beginPath(); ctx.moveTo(0,-25); ctx.lineTo(-30,25); ctx.lineTo(-10,15); ctx.lineTo(10,15); ctx.lineTo(30,25); ctx.closePath(); ctx.fill(); ctx.restore();
-            if (Math.random() < 0.03) enemies.push({ x: Math.random()*(canvas.width-80)+40, y: -40, width: 45, height: 40, speed: Math.random()*3+3 });
-            ctx.fillStyle = '#60a5fa';
-            playerLasers.forEach((l, idx) => { l.y -= l.speed; ctx.shadowBlur=10; ctx.shadowColor='#60a5fa'; ctx.fillRect(l.x-3, l.y, 6, 20); if (l.y < -30) playerLasers.splice(idx,1); });
-            ctx.shadowBlur = 0;
-            enemies.forEach((e, eIdx) => {
-                e.y += e.speed;
-                ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.moveTo(e.x,e.y-20); ctx.lineTo(e.x-22,e.y); ctx.lineTo(e.x,e.y+20); ctx.lineTo(e.x+22,e.y); ctx.closePath(); ctx.fill();
-                if (Math.hypot(player.x-e.x, player.y-e.y) < 40) setGameOver();
-                playerLasers.forEach((l, lIdx) => { if (Math.hypot(l.x-e.x, l.y-e.y) < 30) { playSound('explosion'); enemies.splice(eIdx,1); playerLasers.splice(lIdx,1); score+=10; gameScoreText.innerText=score; } });
-                if (e.y > canvas.height+40) enemies.splice(eIdx,1);
-            });
-            requestAnimationFrame(spaceLoop);
-        }
-
-        // CYBER RUNNER
-        let runner, obstacles, runnerSpeed, obstacleTimer, gridOffset;
-        function initRunnerGame() {
-            runner = { x:150, y:canvas.height-150, width:45, height:60, vy:0, gravity:1.8, isGrounded:true, jumpPower:-30 };
-            obstacles = []; runnerSpeed = 9; obstacleTimer = 0; gridOffset = 0;
-            requestAnimationFrame(runnerLoop);
-        }
-        function runnerLoop() {
-            if (isGameOver || activeGame !== 'runner') return;
-            if ((keys['Space'] || touchState.action) && runner.isGrounded) { runner.vy = runner.jumpPower; runner.isGrounded = false; playSound('jump'); }
-            runner.vy += runner.gravity; runner.y += runner.vy;
-            const groundY = canvas.height - 150;
-            if (runner.y >= groundY) { runner.y = groundY; runner.vy = 0; runner.isGrounded = true; }
-            ctx.fillStyle = '#060112'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            gridOffset = (gridOffset - runnerSpeed) % 80;
-            ctx.strokeStyle='#220847'; ctx.lineWidth=2;
-            for (let x = gridOffset; x < canvas.width; x += 80) { ctx.beginPath(); ctx.moveTo(x,groundY); ctx.lineTo(x,canvas.height); ctx.stroke(); }
-            ctx.strokeStyle='#a855f7'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(0,groundY+10); ctx.lineTo(canvas.width,groundY+10); ctx.stroke();
-            ctx.save(); ctx.translate(runner.x, runner.y); ctx.shadowBlur=15; ctx.shadowColor='#fbbf24'; ctx.fillStyle='#fbbf24'; ctx.fillRect(-runner.width/2,-runner.height,runner.width,runner.height); ctx.restore();
-            obstacleTimer++;
-            if (obstacleTimer > 70) { obstacles.push({ x:canvas.width+50, y:groundY+10, width:40, height:Math.random()*40+40 }); obstacleTimer=0; if (runnerSpeed<18) runnerSpeed+=0.2; }
-            obstacles.forEach((o, idx) => {
-                o.x -= runnerSpeed;
-                ctx.save(); ctx.shadowBlur=15; ctx.shadowColor='#ec4899'; ctx.fillStyle='#ec4899'; ctx.fillRect(o.x-o.width/2, o.y-o.height, o.width, o.height); ctx.restore();
-                const rx=runner.x-runner.width/2, ry=runner.y-runner.height, ox=o.x-o.width/2, oy=o.y-o.height;
-                if (rx<ox+o.width && rx+runner.width>ox && ry<oy+o.height && ry+runner.height>oy) setGameOver();
-                if (o.x < runner.x && !o.passed) { o.passed=true; score+=5; gameScoreText.innerText=score; }
-                if (o.x < -100) obstacles.splice(idx,1);
-            });
-            requestAnimationFrame(runnerLoop);
-        }
-
-        // RETRO BREAKER
-        let paddle, ball, bricks;
-        function initBreakerGame() {
-            paddle = { x:canvas.width/2, y:canvas.height-80, width:140, height:18, speed:12 };
-            ball = { x:canvas.width/2, y:canvas.height-140, r:10, vx:5, vy:-5, isLaunched:false };
-            bricks = [];
-            const rows=4, cols=10, bWidth=110, bHeight=25;
-            const startX = (canvas.width-(cols*bWidth+(cols-1)*8))/2;
-            const colors = ['#f43f5e','#fb923c','#10b981','#60a5fa'];
-            for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) bricks.push({ x:startX+c*(bWidth+8), y:100+r*(bHeight+8), width:bWidth, height:bHeight, color:colors[r] });
-            requestAnimationFrame(breakerLoop);
-        }
-        function breakerLoop() {
-            if (isGameOver || activeGame !== 'breaker') return;
-            if (keys['ArrowLeft'] || touchState.left) paddle.x = Math.max(paddle.width/2+20, paddle.x-paddle.speed);
-            if (keys['ArrowRight'] || touchState.right) paddle.x = Math.min(canvas.width-paddle.width/2-20, paddle.x+paddle.speed);
-            if ((keys['Space'] || touchState.action) && !ball.isLaunched) { ball.isLaunched=true; ball.vx=(Math.random()>0.5?6:-6); ball.vy=-7; }
-            if (!ball.isLaunched) { ball.x=paddle.x; ball.y=paddle.y-25; }
-            else {
-                ball.x+=ball.vx; ball.y+=ball.vy;
-                if (ball.x<ball.r || ball.x>canvas.width-ball.r) { ball.vx*=-1; playSound('hit'); }
-                if (ball.y<ball.r) { ball.vy*=-1; playSound('hit'); }
-                if (ball.y>canvas.height) setGameOver();
-                if (ball.y+ball.r>=paddle.y-paddle.height/2 && ball.x>paddle.x-paddle.width/2 && ball.x<paddle.x+paddle.width/2) { ball.vy*=-1; ball.vx=((ball.x-paddle.x)/(paddle.width/2))*8; playSound('hit'); }
-                bricks.forEach((b,idx) => { if (ball.x+ball.r>b.x && ball.x-ball.r<b.x+b.width && ball.y+ball.r>b.y && ball.y-ball.r<b.y+b.height) { ball.vy*=-1; playSound('explosion'); bricks.splice(idx,1); score+=20; gameScoreText.innerText=score; } });
-            }
-            ctx.fillStyle='#020617'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.save(); ctx.shadowBlur=15; ctx.shadowColor='#10b981'; ctx.fillStyle='#10b981'; ctx.fillRect(paddle.x-paddle.width/2, paddle.y-paddle.height/2, paddle.width, paddle.height); ctx.restore();
-            bricks.forEach(b => { ctx.fillStyle=b.color; ctx.fillRect(b.x,b.y,b.width,b.height); });
-            ctx.save(); ctx.shadowBlur=10; ctx.shadowColor='#ffffff'; ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill(); ctx.restore();
-            requestAnimationFrame(breakerLoop);
-        }
-    </script>
-
-    <!-- FIREBASE COMMENT (chỉ 1 lần, đúng vị trí trước </body>) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -381,44 +62,45 @@
         const charCount = document.getElementById('charCount');
         const commentsList = document.getElementById('commentsList');
 
+        let lastSentTime = 0;
+
         input.addEventListener('input', () => {
-            const len = input.value.length;
-            charCount.textContent = len + ' / 200';
-            charCount.style.color = len > 180 ? '#f87171' : '';
+            charCount.textContent = input.value.length + ' / 200';
         });
 
         sendBtn.addEventListener('click', async () => {
+            const currentTime = Date.now();
+            if (currentTime - lastSentTime < 30000) {
+                alert("Đợi 30 giây mới được gửi tiếp nhé! 🛡️");
+                return;
+            }
+
             const text = input.value.trim();
             if (!text) return;
+
             sendBtn.disabled = true;
-            sendBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> Đang gửi...';
+            sendBtn.textContent = 'Đang gửi...';
             try {
                 await addDoc(collection(db, "comments"), { text: text, time: serverTimestamp() });
+                lastSentTime = Date.now();
                 input.value = '';
                 charCount.textContent = '0 / 200';
             } catch(e) {
-                alert('Gửi thất bại, thử lại!');
+                alert('Lỗi!');
             }
             sendBtn.disabled = false;
-            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane text-xs"></i> Gửi ẩn danh';
+            sendBtn.textContent = 'Gửi ẩn danh';
         });
 
         const q = query(collection(db, "comments"), orderBy("time", "desc"), limit(5));
         onSnapshot(q, (snapshot) => {
-            if (snapshot.empty) {
-                commentsList.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Chưa có tin nhắn nào. Hãy là người đầu tiên! 👋</p>';
-                return;
-            }
             commentsList.innerHTML = snapshot.docs.map(doc => {
                 const d = doc.data();
-                const time = d.time ? new Date(d.time.seconds * 1000).toLocaleString('vi-VN') : 'Vừa xong';
-                return `<div class="bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3 space-y-1">
-                    <p class="text-sm text-slate-200 leading-relaxed">${d.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
-                    <p class="text-xs text-slate-600"><i class="fa-solid fa-clock mr-1"></i>${time} · <span class="text-slate-500">Ẩn danh</span></p>
+                return `<div class="bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3">
+                    <p class="text-sm text-slate-200">${d.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
                 </div>`;
             }).join('');
         });
     </script>
-
 </body>
 </html>

@@ -19,7 +19,6 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
 
-    <!-- HEADER -->
     <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40 px-4 md:px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
@@ -43,10 +42,8 @@
         </div>
     </header>
 
-    <!-- MAIN -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 flex flex-col gap-8">
 
-        <!-- COMMENT BOX -->
         <div class="space-y-4">
             <h3 class="text-lg font-bold font-orbitron tracking-wide text-slate-300 flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded bg-blue-500"></span> 💬 BẢNG TIN CỘNG ĐỒNG
@@ -79,13 +76,12 @@
             </div>
         </div>
 
-        <!-- GAME GRID -->
         <div class="space-y-4" id="game-section">
             <h3 class="text-lg font-bold font-orbitron tracking-wide text-slate-300 flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded bg-blue-500"></span> DANH SÁCH TRÒ CHƠI
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- GAME 1 -->
+            
+            <div id="gameGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-blue-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
@@ -106,7 +102,7 @@
                         </button>
                     </div>
                 </div>
-                <!-- GAME 2 -->
+                
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-purple-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
@@ -119,7 +115,7 @@
                         </div>
                         <div class="p-5 space-y-2">
                             <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-purple-400 transition">Cyber Runner</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed">Game nhảy né chướng ngại vật phong cách Neon Cyberpunk cực kỳ cuốn hút. Bạn chạy được bao xa?</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Game nhảy né chướng ngại vật phong cách Neon Cyberpunk cực kỳ cuốn hút.</p>
                         </div>
                     </div>
                     <div class="p-5 pt-0">
@@ -128,7 +124,7 @@
                         </button>
                     </div>
                 </div>
-                <!-- GAME 3 -->
+                
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-emerald-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
@@ -151,11 +147,11 @@
                         </button>
                     </div>
                 </div>
-            </div>
+
+                </div>
         </div>
     </main>
 
-    <!-- GAME CABINET -->
     <div id="gameCabinet" class="hidden fixed inset-0 bg-slate-950/95 z-50 flex flex-col justify-between overflow-y-auto">
         <div class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -171,7 +167,11 @@
         </div>
         <div class="flex-1 flex flex-col items-center justify-center p-2 md:p-4">
             <div class="relative w-full max-w-2xl aspect-[16/10] md:aspect-[16/9] bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl">
+                
                 <canvas id="gameCanvas" class="w-full h-full bg-black"></canvas>
+
+                <iframe id="gameIframe" class="hidden w-full h-full bg-black" frameborder="0" scrolling="no" allow="autoplay; fullscreen; camera"></iframe>
+
                 <div id="gameOverOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                     <h4 class="text-3xl md:text-5xl font-black font-orbitron text-red-500 tracking-wider mb-2 animate-bounce">GAME OVER</h4>
                     <p class="text-slate-400 text-sm mb-6">Bạn đã chơi rất tốt! Hãy thử lại một lần nữa.</p>
@@ -186,7 +186,8 @@
                 <span><i class="fa-solid fa-circle-info mr-1"></i> Điều khiển di động: Chạm các nút dưới hoặc kéo/chạm trực tiếp trên màn hình</span>
                 <span class="hidden md:inline">Phím máy tính: Arrow Keys / Space</span>
             </div>
-            <div class="flex items-center justify-center gap-6 py-2">
+            
+            <div id="mobileControls" class="flex items-center justify-center gap-6 py-2">
                 <div class="flex gap-4">
                     <button id="btnLeft" class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 active:bg-blue-600 text-white text-xl flex items-center justify-center transition select-none"><i class="fa-solid fa-arrow-left"></i></button>
                     <button id="btnRight" class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 active:bg-blue-600 text-white text-xl flex items-center justify-center transition select-none"><i class="fa-solid fa-arrow-right"></i></button>
@@ -200,12 +201,10 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
     <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 mt-12 px-4">
         <p class="text-slate-600">© 2026 GamHub.Store. All rights reserved.</p>
     </footer>
 
-    <!-- GAME LOGIC -->
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -214,6 +213,10 @@
         const gameScoreText = document.getElementById('gameScore');
         const gameHighScoreText = document.getElementById('gameHighScore');
         const gameOverOverlay = document.getElementById('gameOverOverlay');
+        
+        // BIẾN QUẢN LÝ DYNAMIC GAME
+        const gameIframe = document.getElementById('gameIframe');
+        const mobileControls = document.getElementById('mobileControls');
 
         let audioCtx = null;
         function playSound(type) {
@@ -258,11 +261,24 @@
             setupCanvasSize(); activeGame = gameKey; score = 0; isGameOver = false;
             gameScoreText.innerText = 0; gameHighScoreText.innerText = highScores[gameKey] || 0;
             gameOverOverlay.classList.add('hidden'); gameCabinet.classList.remove('hidden');
+
+            // Luôn bật Canvas, Tắt Iframe khi chơi Game cũ
+            canvas.classList.remove('hidden');
+            gameIframe.classList.add('hidden');
+            mobileControls.classList.remove('hidden');
+
             if (gameKey === 'space') { cabinetGameTitle.innerText = "🌌 SPACE STORM"; btnAction.querySelector('span').innerText = "BẮN"; initSpaceGame(); }
             else if (gameKey === 'runner') { cabinetGameTitle.innerText = "🏃 CYBER RUNNER"; btnAction.querySelector('span').innerText = "NHẢY"; initRunnerGame(); }
             else if (gameKey === 'breaker') { cabinetGameTitle.innerText = "🧱 RETRO BREAKER"; btnAction.querySelector('span').innerText = "KÍCH BÓNG"; initBreakerGame(); }
         }
-        function closeCabinet() { gameCabinet.classList.add('hidden'); isGameOver = true; activeGame = null; }
+
+        function closeCabinet() { 
+            gameCabinet.classList.add('hidden'); 
+            isGameOver = true; 
+            activeGame = null; 
+            gameIframe.src = "about:blank"; // Xóa cache Iframe
+        }
+        
         function restartActiveGame() { startGame(activeGame); }
         function setGameOver() { isGameOver = true; gameOverOverlay.classList.remove('hidden'); playSound('explosion'); if (score > highScores[activeGame]) { highScores[activeGame] = score; gameHighScoreText.innerText = score; } }
 
@@ -363,7 +379,6 @@
         }
     </script>
 
-    <!-- FIREBASE COMMENT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -380,18 +395,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // VISITOR COUNTER
+        // --- 1. VISITOR COUNTER ---
         const visitorCountEl = document.getElementById('visitorCount');
         const VISITOR_KEY = 'gamhub_visited_v1';
         const statsRef = doc(db, "stats", "visitors");
 
-        // Đọc tổng visitor hiện tại
         const statsSnap = await getDoc(statsRef);
         if (statsSnap.exists()) {
             visitorCountEl.textContent = statsSnap.data().total.toLocaleString();
         }
 
-        // Nếu thiết bị này chưa từng vào → tăng counter
         if (!localStorage.getItem(VISITOR_KEY)) {
             localStorage.setItem(VISITOR_KEY, '1');
             try {
@@ -401,6 +414,7 @@
             } catch(e) {}
         }
 
+        // --- 2. BÌNH LUẬN ---
         const input = document.getElementById('commentInput');
         const sendBtn = document.getElementById('sendComment');
         const charCount = document.getElementById('charCount');
@@ -443,6 +457,75 @@
                 </div>`;
             }).join('');
         });
+
+        // --- 3. HỆ THỐNG LOAD GAME TỰ ĐỘNG TỪ FIREBASE ---
+        const gameGrid = document.getElementById('gameGrid');
+        window.dynamicGames = {}; // Lưu trữ dữ liệu game cho hàm JS bên ngoài gọi
+
+        const qGames = query(collection(db, "games"), orderBy("createdAt", "asc"));
+        onSnapshot(qGames, (snapshot) => {
+            // Xóa các game động đã load trước đó để tránh trùng lặp
+            document.querySelectorAll('.dynamic-game').forEach(el => el.remove());
+            
+            snapshot.docs.forEach(doc => {
+                const g = doc.data();
+                window.dynamicGames[g.id] = g.url; // Lưu link iframe
+                
+                // Lấy thông số từ Admin, nếu không có lấy mặc định
+                const c = g.color || 'blue';
+                const icon = g.icon || 'fa-gamepad';
+                
+                // Vẽ mã HTML cho thẻ Game
+                const htmlContent = `
+                <div class="dynamic-game bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-${c}-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <i class="fa-solid ${icon} text-5xl text-${c}-500/80 group-hover:scale-110 transition duration-300 z-10"></i>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
+                        </div>
+                        <div class="p-5 space-y-2">
+                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-${c}-400 transition">${g.name}</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">${g.description}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0">
+                        <button onclick="startDynamicGame('${g.id}')" class="w-full bg-${c}-600 hover:bg-${c}-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-play text-xs"></i> Chơi ngay
+                        </button>
+                    </div>
+                </div>`;
+                
+                // Nhúng nối tiếp vào lưới hiển thị
+                gameGrid.insertAdjacentHTML('beforeend', htmlContent);
+            });
+        });
+
+        // Hàm mở Game động cho nút "Chơi ngay"
+        window.startDynamicGame = function(gameId) {
+            const url = window.dynamicGames[gameId];
+            if(!url) return;
+            
+            const canvas = document.getElementById('gameCanvas');
+            const gameIframe = document.getElementById('gameIframe');
+            const mobileControls = document.getElementById('mobileControls');
+            const gameCabinet = document.getElementById('gameCabinet');
+            const cabinetTitle = document.getElementById('cabinetGameTitle');
+            const gameOverOverlay = document.getElementById('gameOverOverlay');
+            
+            // Chuyển chế độ sang iFrame, Tắt Canvas và nút bấm ảo
+            canvas.classList.add('hidden');
+            mobileControls.classList.add('hidden');
+            gameIframe.classList.remove('hidden');
+            
+            // Gắn link Game vào Iframe
+            gameIframe.src = url;
+            cabinetTitle.innerText = gameId.toUpperCase();
+            
+            // Bật Tủ Game lên
+            gameOverOverlay.classList.add('hidden');
+            gameCabinet.classList.remove('hidden');
+            setTimeout(() => { gameIframe.focus(); }, 100);
+        };
     </script>
 
 </body>

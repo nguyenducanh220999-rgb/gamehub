@@ -3,90 +3,492 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GamHub Admin Panel</title>
+    <title>GamHub Admin Panel v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #030712; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+        /* Tab active */
+        .tab-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #60a5fa; }
+        .tab-btn { transition: all 0.2s; }
+
+        /* Input focus glow */
+        .inp { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; width: 100%; color: #e2e8f0; outline: none; transition: border-color 0.2s, box-shadow 0.2s; font-size: 14px; }
+        .inp:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+        .inp-green:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+        .label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
+
+        /* Drag & drop zone */
+        .dropzone { border: 2px dashed #1e293b; border-radius: 12px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .dropzone:hover, .dropzone.dragging { border-color: #10b981; background: rgba(16,185,129,0.05); }
+        .dropzone.dragging { box-shadow: 0 0 20px rgba(16,185,129,0.2); }
+
+        /* Color swatch */
+        .swatch { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+        .swatch.selected { border-color: #fff; transform: scale(1.2); }
+
+        /* Progress bar */
+        .progress-bar { height: 4px; background: #0f172a; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #3b82f6); border-radius: 2px; transition: width 0.3s; }
+
+        /* Toggle switch */
+        .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; background: #1e293b; border-radius: 24px; cursor: pointer; transition: 0.2s; }
+        .toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #475569; border-radius: 50%; transition: 0.2s; }
+        input:checked + .toggle-slider { background: #1d4ed8; }
+        input:checked + .toggle-slider:before { transform: translateX(20px); background: #60a5fa; }
+
+        /* Game card in list */
+        .game-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; transition: border-color 0.2s; }
+        .game-card:hover { border-color: #334155; }
+
+        /* Stat card */
+        .stat-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; }
+
+        /* Notification toast */
+        #toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Section panel */
+        .section-panel { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+
+        /* Thumbnail preview */
+        .thumb-preview { width: 100%; aspect-ratio: 16/9; border-radius: 10px; border: 1px solid #1e293b; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #020617; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen text-slate-200">
 
-    <!-- FORM ĐĂNG NHẬP -->
-    <div id="loginPanel" class="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-2xl w-full max-w-md">
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-black text-white tracking-widest">GAM<span class="text-blue-500">HUB</span> ADMIN</h1>
-            <p class="text-slate-500 text-sm mt-2">Đăng nhập để quản lý trò chơi</p>
-        </div>
-        <div class="space-y-4">
-            <input type="email" id="email" placeholder="Email (VD: admin@gamhub.store)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none">
-            <input type="password" id="password" placeholder="Mật khẩu" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none">
-            <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition shadow-[0_0_15px_rgba(37,99,235,0.3)]">ĐĂNG NHẬP</button>
+    <!-- ===== LOGIN ===== -->
+    <div id="loginPanel" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-sm">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
+                </div>
+                <h1 class="text-2xl font-black font-orbitron tracking-widest text-white">GAM<span class="text-blue-500">HUB</span></h1>
+                <p class="text-slate-500 text-sm mt-1">Admin Dashboard v2</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl">
+                <div>
+                    <label class="label">Email</label>
+                    <input type="email" id="loginEmail" class="inp" placeholder="admin@gamhub.store">
+                </div>
+                <div>
+                    <label class="label">Mật khẩu</label>
+                    <input type="password" id="loginPassword" class="inp" placeholder="••••••••">
+                </div>
+                <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition text-sm shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i>ĐĂNG NHẬP
+                </button>
+                <p id="loginError" class="text-red-400 text-xs text-center hidden">Sai email hoặc mật khẩu!</p>
+            </div>
         </div>
     </div>
 
-    <!-- BẢNG ĐIỀU KHIỂN (Ẩn lúc đầu) -->
-    <div id="adminPanel" class="hidden w-full max-w-4xl bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-800 shadow-2xl">
-        <div class="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
-            <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-gamepad text-blue-500 mr-2"></i> KHO TRÒ CHƠI</h2>
-            <button id="btnLogout" class="text-red-400 hover:text-red-300 text-sm font-semibold"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
-        </div>
+    <!-- ===== ADMIN PANEL ===== -->
+    <div id="adminPanel" class="hidden min-h-screen flex flex-col">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Khu vực nhập thông tin -->
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-semibold text-slate-400 uppercase">Mã Game (Viết liền không dấu)</label>
-                    <input type="text" id="gId" placeholder="VD: tiemtaphoa" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 mt-1 outline-none focus:border-blue-500 transition">
+        <!-- Header -->
+        <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow shadow-blue-500/30">
+                    <i class="fa-solid fa-gamepad text-white text-sm"></i>
                 </div>
                 <div>
-                    <label class="text-xs font-semibold text-slate-400 uppercase">Tên Game hiển thị</label>
-                    <input type="text" id="gName" placeholder="VD: Tiệm Tạp Hóa Bà Xiêm" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 mt-1 outline-none focus:border-blue-500 transition">
-                </div>
-                <div>
-                    <label class="text-xs font-semibold text-slate-400 uppercase">Mô tả ngắn</label>
-                    <textarea id="gDesc" rows="2" placeholder="VD: Quản lý và bán đồ ăn vặt..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 mt-1 outline-none focus:border-blue-500 transition"></textarea>
+                    <h1 class="font-black font-orbitron tracking-widest text-white text-base">GAM<span class="text-blue-500">HUB</span> <span class="text-slate-500 font-normal text-xs">ADMIN</span></h1>
                 </div>
             </div>
+            <div class="flex items-center gap-3">
+                <a href="https://nguyenducanh220999-rgb.github.io/gamehub/" target="_blank" class="text-xs text-slate-400 hover:text-blue-400 transition hidden sm:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Xem trang chủ
+                </a>
+                <button id="btnLogout" class="text-xs text-red-400 hover:text-red-300 transition flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
+                    <i class="fa-solid fa-right-from-bracket"></i> Thoát
+                </button>
+            </div>
+        </header>
 
-            <!-- Khu vực cấu hình Link & Nút Upload -->
-            <div class="flex flex-col space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs font-semibold text-slate-400 uppercase">Icon (FontAwesome)</label>
-                        <input type="text" id="gIcon" placeholder="fa-store" value="fa-gamepad" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 mt-1 outline-none focus:border-blue-500 transition">
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-slate-400 uppercase">Màu chủ đạo</label>
-                        <select id="gColor" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 mt-1 outline-none text-slate-300 focus:border-blue-500 transition">
-                            <option value="blue">Xanh dương (Blue)</option>
-                            <option value="purple">Tím (Purple)</option>
-                            <option value="emerald">Xanh lá (Emerald)</option>
-                            <option value="amber">Vàng/Cam (Amber)</option>
-                            <option value="red">Đỏ (Red)</option>
-                        </select>
-                    </div>
-                </div>
+        <!-- Tab nav -->
+        <nav class="bg-slate-950 border-b border-slate-800 px-6 flex gap-1 overflow-x-auto">
+            <button class="tab-btn active font-semibold text-sm px-4 py-3.5 border-b-2 border-transparent whitespace-nowrap flex items-center gap-2" data-tab="games">
+                <i class="fa-solid fa-gamepad text-xs"></i> Quản lý Game
+            </button>
+            <button class="tab-btn font-semibold text-sm px-4 py-3.5 border-b-2 border-transparent text-slate-500 whitespace-nowrap flex items-center gap-2" data-tab="design">
+                <i class="fa-solid fa-palette text-xs"></i> Giao diện
+            </button>
+            <button class="tab-btn font-semibold text-sm px-4 py-3.5 border-b-2 border-transparent text-slate-500 whitespace-nowrap flex items-center gap-2" data-tab="stats">
+                <i class="fa-solid fa-chart-line text-xs"></i> Thống kê
+            </button>
+        </nav>
 
-                <div class="flex-1 flex flex-col justify-end">
-                    <label class="text-xs font-semibold text-slate-400 uppercase">Tên file Game trên GitHub</label>
-                    <input type="text" id="gUrl" placeholder="VD: tiem_ba_xiem_v10 (10-06-26).html" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 mt-1 mb-4 outline-none focus:border-emerald-500 text-emerald-400 font-mono text-sm transition shadow-[0_0_10px_rgba(16,185,129,0.1)] focus:shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                    
-                    <button id="btnUpload" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> PHÁT HÀNH GAME LÊN WEB
+        <!-- Content -->
+        <main class="flex-1 p-4 md:p-6 max-w-5xl w-full mx-auto space-y-6">
+
+            <!-- ===== TAB: GAMES ===== -->
+            <div id="tab-games" class="tab-content space-y-6">
+
+                <!-- Upload game mới -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6">
+                    <h2 class="font-bold text-white mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-emerald-500 rounded-full inline-block"></span>
+                        Phát hành Game mới
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Cột trái: thông tin -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label">Mã Game <span class="text-red-400">*</span></label>
+                                <input type="text" id="gId" class="inp" placeholder="VD: tiemtaphoa">
+                            </div>
+                            <div>
+                                <label class="label">Tên hiển thị <span class="text-red-400">*</span></label>
+                                <input type="text" id="gName" class="inp" placeholder="VD: Tiệm Tạp Hóa Bà Xiêm">
+                            </div>
+                            <div>
+                                <label class="label">Mô tả ngắn</label>
+                                <textarea id="gDesc" rows="2" class="inp resize-none" placeholder="Mô tả vài câu về game..."></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="label">Icon FontAwesome</label>
+                                    <input type="text" id="gIcon" class="inp font-mono-tech" placeholder="fa-store" value="fa-gamepad">
+                                </div>
+                                <div>
+                                    <label class="label">Màu chủ đạo</label>
+                                    <select id="gColor" class="inp">
+                                        <option value="blue">🔵 Xanh dương</option>
+                                        <option value="purple">🟣 Tím</option>
+                                        <option value="emerald">🟢 Xanh lá</option>
+                                        <option value="amber">🟡 Vàng/Cam</option>
+                                        <option value="red">🔴 Đỏ</option>
+                                        <option value="pink">🩷 Hồng</option>
+                                        <option value="cyan">🩵 Cyan</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột phải: upload + thumbnail -->
+                        <div class="space-y-4">
+                            <!-- Thumbnail -->
+                            <div>
+                                <label class="label">Ảnh thumbnail game</label>
+                                <div class="thumb-preview mb-2" id="thumbPreview">
+                                    <div class="text-center text-slate-600">
+                                        <i class="fa-solid fa-image text-3xl mb-2 block"></i>
+                                        <span class="text-xs">Chưa có ảnh</span>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <label class="flex-1 cursor-pointer">
+                                        <div class="inp text-center text-xs text-slate-400 hover:border-blue-500 cursor-pointer py-2 transition">
+                                            <i class="fa-solid fa-upload mr-1"></i> Chọn ảnh (JPG/PNG)
+                                        </div>
+                                        <input type="file" id="thumbFile" accept="image/*" class="hidden">
+                                    </label>
+                                    <input type="text" id="thumbUrl" class="inp flex-1 text-xs" placeholder="hoặc dán URL ảnh...">
+                                </div>
+                                <div id="thumbUploadProgress" class="progress-bar mt-2 hidden">
+                                    <div class="progress-fill" id="thumbProgressFill" style="width:0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Kéo thả file HTML -->
+                            <div>
+                                <label class="label">File game HTML <span class="text-red-400">*</span></label>
+                                <div class="dropzone" id="dropzone">
+                                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-600 mb-2 block"></i>
+                                    <p class="text-sm text-slate-400 font-semibold">Kéo thả file <span class="text-emerald-400">.html</span> vào đây</p>
+                                    <p class="text-xs text-slate-600 mt-1">hoặc click để chọn file</p>
+                                    <input type="file" id="gameFileInput" accept=".html" class="hidden">
+                                </div>
+                                <div id="fileInfo" class="hidden mt-2 bg-emerald-950/50 border border-emerald-800/50 rounded-lg px-3 py-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-file-code text-emerald-400 text-sm"></i>
+                                    <span id="fileName" class="text-emerald-400 text-xs font-mono flex-1 truncate"></span>
+                                    <button id="clearFile" class="text-slate-500 hover:text-red-400 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div id="githubProgress" class="hidden mt-2">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="githubProgressFill" style="width:0%"></div>
+                                    </div>
+                                    <p id="githubStatus" class="text-xs text-slate-500 mt-1 font-mono-tech"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GitHub Token -->
+                    <div class="mt-4 bg-amber-950/30 border border-amber-800/40 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-brands fa-github text-amber-400 text-lg mt-0.5"></i>
+                            <div class="flex-1">
+                                <p class="text-xs font-semibold text-amber-300 mb-1">GitHub Token (để tự động upload file lên repo)</p>
+                                <input type="password" id="githubToken" class="inp inp-green text-xs font-mono-tech" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx — lưu 1 lần, không cần nhập lại">
+                                <p class="text-xs text-slate-600 mt-1.5">
+                                    <i class="fa-solid fa-circle-info mr-1"></i>
+                                    Tạo tại: <a href="https://github.com/settings/tokens/new" target="_blank" class="text-amber-400 hover:underline">github.com/settings/tokens</a> → chọn quyền <code class="bg-slate-800 px-1 rounded">repo</code>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút phát hành -->
+                    <button id="btnPublish" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-emerald-500/20 text-sm">
+                        <i class="fa-solid fa-rocket"></i> PHÁT HÀNH GAME LÊN WEB
                     </button>
-                    <p id="statusTxt" class="text-center text-xs mt-3 text-emerald-400 font-mono"></p>
+                </div>
+
+                <!-- Danh sách game hiện có -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6">
+                    <h2 class="font-bold text-white mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-blue-500 rounded-full inline-block"></span>
+                        Game đã phát hành
+                        <span id="gameCount" class="ml-auto bg-slate-800 text-slate-400 text-xs px-2 py-0.5 rounded-full font-mono">0 game</span>
+                    </h2>
+                    <div id="gameList" class="space-y-3">
+                        <div class="text-center py-8 text-slate-600">
+                            <i class="fa-solid fa-spinner animate-spin text-xl mb-2 block"></i>
+                            <span class="text-sm">Đang tải...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- ===== TAB: DESIGN ===== -->
+            <div id="tab-design" class="tab-content hidden space-y-6">
+
+                <!-- Màu sắc & Theme -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6">
+                    <h2 class="font-bold text-white mb-5 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-purple-500 rounded-full inline-block"></span>
+                        Màu sắc & Theme
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label">Màu accent chính (nút, highlight)</label>
+                                <div class="flex gap-2 flex-wrap mt-1" id="accentSwatches">
+                                    <div class="swatch selected" style="background:#3b82f6" data-color="#3b82f6" title="Blue"></div>
+                                    <div class="swatch" style="background:#8b5cf6" data-color="#8b5cf6" title="Purple"></div>
+                                    <div class="swatch" style="background:#10b981" data-color="#10b981" title="Emerald"></div>
+                                    <div class="swatch" style="background:#f59e0b" data-color="#f59e0b" title="Amber"></div>
+                                    <div class="swatch" style="background:#ef4444" data-color="#ef4444" title="Red"></div>
+                                    <div class="swatch" style="background:#ec4899" data-color="#ec4899" title="Pink"></div>
+                                    <div class="swatch" style="background:#06b6d4" data-color="#06b6d4" title="Cyan"></div>
+                                    <div class="swatch" style="background:#f97316" data-color="#f97316" title="Orange"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="label">Màu nền tổng</label>
+                                <div class="flex gap-2 mt-1" id="bgSwatches">
+                                    <div class="swatch selected" style="background:#030712" data-color="#030712" title="Đen tuyền"></div>
+                                    <div class="swatch" style="background:#0f172a" data-color="#0f172a" title="Navy Dark"></div>
+                                    <div class="swatch" style="background:#1a0a2e" data-color="#1a0a2e" title="Deep Purple"></div>
+                                    <div class="swatch" style="background:#0a1628" data-color="#0a1628" title="Midnight Blue"></div>
+                                    <div class="swatch" style="background:#0d1f0d" data-color="#0d1f0d" title="Dark Green"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label">Font chữ chính</label>
+                                <select id="fontChoice" class="inp">
+                                    <option value="Inter">Inter (hiện tại)</option>
+                                    <option value="Rajdhani">Rajdhani (Cyber)</option>
+                                    <option value="Space Grotesk">Space Grotesk</option>
+                                    <option value="DM Sans">DM Sans</option>
+                                    <option value="Exo 2">Exo 2 (Sci-Fi)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="label">Header logo text</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="logoMain" class="inp flex-1 font-bold" placeholder="GAM" value="GAM">
+                                    <input type="text" id="logoAccent" class="inp w-24 font-bold" placeholder="HUB" value="HUB">
+                                </div>
+                                <p class="text-xs text-slate-600 mt-1">Phần đầu + phần màu accent</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Banner & Nội dung -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6">
+                    <h2 class="font-bold text-white mb-5 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-cyan-500 rounded-full inline-block"></span>
+                        Nội dung trang chủ
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="label">Tagline header (dòng nhỏ trên logo)</label>
+                            <input type="text" id="headerTagline" class="inp" value="Arcade Portal" placeholder="Arcade Portal">
+                        </div>
+                        <div>
+                            <label class="label">Tên section "Game mới phát hành"</label>
+                            <input type="text" id="sectionNewName" class="inp" value="🌟 GAME MỚI PHÁT HÀNH" placeholder="🌟 GAME MỚI PHÁT HÀNH">
+                        </div>
+                        <div>
+                            <label class="label">Tên section "Warm-up Games"</label>
+                            <input type="text" id="sectionWarmName" class="inp" value="🔥 WARM-UP GAMES" placeholder="🔥 WARM-UP GAMES">
+                        </div>
+                        <div>
+                            <label class="label">Footer text</label>
+                            <input type="text" id="footerText" class="inp" value="© 2026 GamHub.Store. Thiết kế và tối ưu bởi Senior Web Game.">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bật/tắt sections -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6">
+                    <h2 class="font-bold text-white mb-5 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-amber-500 rounded-full inline-block"></span>
+                        Ẩn / Hiện các khu vực
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="section-panel">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-200">💬 Bảng tin cộng đồng</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Khu vực bình luận ẩn danh</p>
+                            </div>
+                            <label class="toggle"><input type="checkbox" id="toggleComments" checked><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="section-panel">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-200">🔥 Warm-up Games</p>
+                                <p class="text-xs text-slate-500 mt-0.5">3 game mini built-in (Space Storm, Cyber Runner...)</p>
+                            </div>
+                            <label class="toggle"><input type="checkbox" id="toggleWarmup" checked><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="section-panel">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-200">🌍 Visitor counter</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Hiện số lượt truy cập trên header</p>
+                            </div>
+                            <label class="toggle"><input type="checkbox" id="toggleVisitor" checked><span class="toggle-slider"></span></label>
+                        </div>
+                        <div class="section-panel">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-200">📢 Server ONLINE badge</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Badge xanh nhấp nháy trên header</p>
+                            </div>
+                            <label class="toggle"><input type="checkbox" id="toggleOnline" checked><span class="toggle-slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lưu design -->
+                <button id="btnSaveDesign" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3.5 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-purple-500/20 text-sm">
+                    <i class="fa-solid fa-floppy-disk"></i> LƯU CÀI ĐẶT GIAO DIỆN
+                </button>
+            </div>
+
+            <!-- ===== TAB: STATS ===== -->
+            <div id="tab-stats" class="tab-content hidden space-y-6">
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="stat-card text-center">
+                        <i class="fa-solid fa-gamepad text-blue-500 text-2xl mb-2"></i>
+                        <p class="text-2xl font-black font-orbitron text-white" id="statGames">—</p>
+                        <p class="text-xs text-slate-500 mt-1">Tổng game</p>
+                    </div>
+                    <div class="stat-card text-center">
+                        <i class="fa-solid fa-globe text-emerald-500 text-2xl mb-2"></i>
+                        <p class="text-2xl font-black font-orbitron text-white" id="statVisitors">—</p>
+                        <p class="text-xs text-slate-500 mt-1">Unique visitors</p>
+                    </div>
+                    <div class="stat-card text-center">
+                        <i class="fa-solid fa-comments text-purple-500 text-2xl mb-2"></i>
+                        <p class="text-2xl font-black font-orbitron text-white" id="statComments">—</p>
+                        <p class="text-xs text-slate-500 mt-1">Bình luận</p>
+                    </div>
+                    <div class="stat-card text-center">
+                        <i class="fa-solid fa-hard-drive text-amber-500 text-2xl mb-2"></i>
+                        <p class="text-2xl font-black font-orbitron text-white" id="statStorage">—</p>
+                        <p class="text-xs text-slate-500 mt-1">Storage dùng</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6">
+                    <h2 class="font-bold text-white mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-emerald-500 rounded-full inline-block"></span>
+                        5 bình luận gần nhất
+                    </h2>
+                    <div id="recentComments" class="space-y-3">
+                        <div class="text-center py-8 text-slate-600">
+                            <i class="fa-solid fa-spinner animate-spin text-xl mb-2 block"></i>
+                            <span class="text-sm">Đang tải...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <h2 class="font-bold text-white mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-blue-500 rounded-full inline-block"></span>
+                        Tình trạng hệ thống
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="text-xs font-semibold text-slate-300">Firebase Firestore</span>
+                            </div>
+                            <p class="text-xs text-emerald-400 font-mono">ONLINE · Free tier</p>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="text-xs font-semibold text-slate-300">Firebase Storage</span>
+                            </div>
+                            <p class="text-xs text-emerald-400 font-mono">ONLINE · 5GB Free</p>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="text-xs font-semibold text-slate-300">GitHub Pages</span>
+                            </div>
+                            <p class="text-xs text-emerald-400 font-mono">ONLINE · Free</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
+    <!-- Toast notification -->
+    <div id="toast" class="bg-slate-800 border border-slate-700 text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 max-w-sm">
+        <i id="toastIcon" class="fa-solid fa-check-circle text-emerald-400"></i>
+        <span id="toastMsg">Thành công!</span>
+    </div>
+
+    <!-- FIREBASE + LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+        // ===== CONFIG =====
+        const GITHUB_USER = "nguyenducanh220999-rgb";
+        const GITHUB_REPO = "gamehub";
+        const GITHUB_BRANCH = "main";
 
         const firebaseConfig = {
             apiKey: "AIzaSyALMfE9AfEaRGSgSp6IghU5Cu9uIs54-ac",
             authDomain: "gamhub-f3381.firebaseapp.com",
             projectId: "gamhub-f3381",
+            storageBucket: "gamhub-f3381.firebasestorage.app",
             messagingSenderId: "567076365200",
             appId: "1:567076365200:web:5f3bc16acb90d8e27d8915"
         };
@@ -94,59 +496,404 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        const loginPanel = document.getElementById('loginPanel');
-        const adminPanel = document.getElementById('adminPanel');
-        const statusTxt = document.getElementById('statusTxt');
+        // ===== TOAST =====
+        function toast(msg, type = 'success') {
+            const el = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            document.getElementById('toastMsg').textContent = msg;
+            icon.className = type === 'success'
+                ? 'fa-solid fa-check-circle text-emerald-400'
+                : type === 'error'
+                    ? 'fa-solid fa-circle-exclamation text-red-400'
+                    : 'fa-solid fa-circle-info text-blue-400';
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3500);
+        }
 
-        document.getElementById('btnLogin').addEventListener('click', () => {
-            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
-                .catch(err => alert("Sai tài khoản hoặc mật khẩu!"));
+        // ===== AUTH =====
+        document.getElementById('btnLogin').addEventListener('click', async () => {
+            const btn = document.getElementById('btnLogin');
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i>Đang đăng nhập...';
+            try {
+                await signInWithEmailAndPassword(auth,
+                    document.getElementById('loginEmail').value,
+                    document.getElementById('loginPassword').value
+                );
+            } catch {
+                document.getElementById('loginError').classList.remove('hidden');
+                btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i>ĐĂNG NHẬP';
+            }
         });
-
         document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
         onAuthStateChanged(auth, user => {
-            if (user) { loginPanel.classList.add('hidden'); adminPanel.classList.remove('hidden'); } 
-            else { loginPanel.classList.remove('hidden'); adminPanel.classList.add('hidden'); }
+            document.getElementById('loginPanel').classList.toggle('hidden', !!user);
+            document.getElementById('adminPanel').classList.toggle('hidden', !user);
+            if (user) { loadGames(); loadStats(); loadDesignSettings(); }
         });
 
-        // Xử lý Lưu Data thẳng vào Firestore (Bỏ qua Storage)
-        document.getElementById('btnUpload').addEventListener('click', async () => {
+        // ===== TABS =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active'); b.classList.add('text-slate-500');
+                });
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                btn.classList.add('active'); btn.classList.remove('text-slate-500');
+                document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+            });
+        });
+
+        // ===== TOKEN persistence =====
+        const tokenInput = document.getElementById('githubToken');
+        const savedToken = localStorage.getItem('gh_token_gamhub');
+        if (savedToken) tokenInput.value = savedToken;
+        tokenInput.addEventListener('change', () => {
+            if (tokenInput.value) localStorage.setItem('gh_token_gamhub', tokenInput.value);
+        });
+
+        // ===== DRAG & DROP file HTML =====
+        const dropzone = document.getElementById('dropzone');
+        const gameFileInput = document.getElementById('gameFileInput');
+        let selectedGameFile = null;
+
+        dropzone.addEventListener('click', () => gameFileInput.click());
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragging'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault(); dropzone.classList.remove('dragging');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.html')) setGameFile(file);
+            else toast('Chỉ chấp nhận file .html!', 'error');
+        });
+        gameFileInput.addEventListener('change', () => {
+            if (gameFileInput.files[0]) setGameFile(gameFileInput.files[0]);
+        });
+        document.getElementById('clearFile').addEventListener('click', () => {
+            selectedGameFile = null;
+            document.getElementById('fileInfo').classList.add('hidden');
+            dropzone.classList.remove('hidden');
+        });
+        function setGameFile(file) {
+            selectedGameFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileInfo').classList.remove('hidden');
+            // Auto điền mã game từ tên file
+            if (!document.getElementById('gId').value) {
+                const autoId = file.name.replace('.html','').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+                document.getElementById('gId').value = autoId.slice(0, 20);
+            }
+        }
+
+        // ===== THUMBNAIL =====
+        const thumbFile = document.getElementById('thumbFile');
+        const thumbUrlInput = document.getElementById('thumbUrl');
+        let uploadedThumbUrl = '';
+
+        thumbFile.addEventListener('change', () => {
+            const file = thumbFile.files[0];
+            if (!file) return;
+            // Preview local
+            const reader = new FileReader();
+            reader.onload = e => setThumbPreview(e.target.result);
+            reader.readAsDataURL(file);
+        });
+        thumbUrlInput.addEventListener('input', () => {
+            if (thumbUrlInput.value) setThumbPreview(thumbUrlInput.value);
+        });
+        function setThumbPreview(url) {
+            const preview = document.getElementById('thumbPreview');
+            preview.innerHTML = `<img src="${url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'text-center text-red-400 p-4\\'><i class=\\'fa-solid fa-image-slash text-2xl\\'></i><p class=\\'text-xs mt-1\\'>Ảnh lỗi</p></div>'">`;
+        }
+
+        async function uploadThumbnail(gameId) {
+            if (thumbUrlInput.value.trim()) return thumbUrlInput.value.trim();
+            if (!thumbFile.files[0]) return '';
+            const file = thumbFile.files[0];
+            const progressBar = document.getElementById('thumbUploadProgress');
+            const fill = document.getElementById('thumbProgressFill');
+            progressBar.classList.remove('hidden');
+            return new Promise((resolve, reject) => {
+                const storageRef = ref(storage, `thumbnails/${gameId}_${Date.now()}`);
+                const task = uploadBytesResumable(storageRef, file);
+                task.on('state_changed',
+                    snap => fill.style.width = (snap.bytesTransferred / snap.totalBytes * 100) + '%',
+                    err => { toast('Lỗi upload ảnh: ' + err.message, 'error'); reject(err); },
+                    async () => { const url = await getDownloadURL(task.snapshot.ref); resolve(url); }
+                );
+            });
+        }
+
+        // ===== PUSH FILE TO GITHUB =====
+        async function pushToGitHub(filename, content, token) {
+            const encoded = btoa(unescape(encodeURIComponent(content)));
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${encodeURIComponent(filename)}`;
+            
+            // Check nếu file đã tồn tại (lấy SHA)
+            let sha = '';
+            try {
+                const check = await fetch(apiUrl, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+                if (check.ok) { const data = await check.json(); sha = data.sha; }
+            } catch {}
+
+            const body = { message: `🎮 Upload game: ${filename}`, content: encoded, branch: GITHUB_BRANCH };
+            if (sha) body.sha = sha;
+
+            const res = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message || 'GitHub API error');
+            }
+            return filename;
+        }
+
+        // ===== PUBLISH GAME =====
+        document.getElementById('btnPublish').addEventListener('click', async () => {
             const id = document.getElementById('gId').value.trim();
             const name = document.getElementById('gName').value.trim();
             const desc = document.getElementById('gDesc').value.trim();
-            const icon = document.getElementById('gIcon').value.trim();
+            const icon = document.getElementById('gIcon').value.trim() || 'fa-gamepad';
             const color = document.getElementById('gColor').value;
-            const url = document.getElementById('gUrl').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
 
-            if(!id || !name || !url) return alert("Vui lòng nhập đủ Mã ID, Tên Game và Tên File!");
+            if (!id || !name) return toast('Nhập đủ Mã Game và Tên Game!', 'error');
+            if (!selectedGameFile && !token) return toast('Cần chọn file .html hoặc nhập GitHub Token!', 'error');
 
-            const btn = document.getElementById('btnUpload');
+            const btn = document.getElementById('btnPublish');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> ĐANG LƯU...';
-            statusTxt.textContent = "Đang đồng bộ dữ liệu...";
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Đang xử lý...';
 
             try {
+                // 1. Upload thumbnail
+                let thumbUrl = '';
+                if (thumbFile.files[0] || thumbUrlInput.value.trim()) {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Đang upload ảnh...';
+                    thumbUrl = await uploadThumbnail(id);
+                    document.getElementById('thumbUploadProgress').classList.add('hidden');
+                }
+
+                // 2. Push file HTML lên GitHub
+                let gameFileName = '';
+                if (selectedGameFile && token) {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Đang push lên GitHub...';
+                    const progress = document.getElementById('githubProgress');
+                    const fill = document.getElementById('githubProgressFill');
+                    const status = document.getElementById('githubStatus');
+                    progress.classList.remove('hidden');
+                    fill.style.width = '30%';
+                    status.textContent = 'Đọc file...';
+
+                    const content = await selectedGameFile.text();
+                    fill.style.width = '60%';
+                    status.textContent = 'Đẩy lên GitHub...';
+
+                    gameFileName = await pushToGitHub(selectedGameFile.name, content, token);
+                    fill.style.width = '100%';
+                    status.textContent = '✅ GitHub cập nhật xong!';
+                    localStorage.setItem('gh_token_gamhub', token);
+                }
+
+                // 3. Lưu Firestore
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Lưu Firestore...';
+                const gameUrl = gameFileName
+                    ? `https://${GITHUB_USER}.github.io/${GITHUB_REPO}/${encodeURIComponent(gameFileName)}`
+                    : document.getElementById('gId').value.trim(); // fallback
+
                 await setDoc(doc(db, "games", id), {
-                    id: id,
-                    name: name,
-                    description: desc,
-                    icon: icon,
-                    color: color,
-                    url: url, // Lưu trực tiếp tên file (hoặc link)
+                    id, name, description: desc, icon, color,
+                    url: gameUrl,
+                    thumbnail: thumbUrl,
                     createdAt: serverTimestamp()
                 });
 
-                statusTxt.textContent = "PHÁT HÀNH THÀNH CÔNG! TRANG CHỦ ĐÃ ĐƯỢC CẬP NHẬT.";
-                setTimeout(() => { statusTxt.textContent = ""; }, 3000);
-            } catch (error) {
-                console.error(error);
-                alert("Lỗi: " + error.message);
+                toast(`🎮 "${name}" đã phát hành thành công!`);
+                // Reset form
+                ['gId','gName','gDesc','gIcon'].forEach(f => { if(f !== 'gIcon') document.getElementById(f).value = ''; });
+                document.getElementById('gIcon').value = 'fa-gamepad';
+                document.getElementById('thumbPreview').innerHTML = '<div class="text-center text-slate-600"><i class="fa-solid fa-image text-3xl mb-2 block"></i><span class="text-xs">Chưa có ảnh</span></div>';
+                thumbUrlInput.value = '';
+                document.getElementById('thumbFile').value = '';
+                document.getElementById('fileInfo').classList.add('hidden');
+                document.getElementById('githubProgress').classList.add('hidden');
+                selectedGameFile = null;
+                uploadedThumbUrl = '';
+
+            } catch (err) {
+                toast('Lỗi: ' + err.message, 'error');
+                console.error(err);
             }
 
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PHÁT HÀNH GAME LÊN WEB';
+            btn.innerHTML = '<i class="fa-solid fa-rocket"></i> PHÁT HÀNH GAME LÊN WEB';
+        });
+
+        // ===== LOAD GAME LIST =====
+        function loadGames() {
+            const q = query(collection(db, "games"), orderBy("createdAt", "desc"));
+            onSnapshot(q, snap => {
+                const list = document.getElementById('gameList');
+                document.getElementById('statGames').textContent = snap.size;
+                document.getElementById('gameCount').textContent = snap.size + ' game';
+                if (snap.empty) {
+                    list.innerHTML = '<p class="text-center text-slate-600 text-sm py-6">Chưa có game nào. Hãy phát hành game đầu tiên!</p>';
+                    return;
+                }
+                const colorMap = { blue:'#3b82f6', purple:'#8b5cf6', emerald:'#10b981', amber:'#f59e0b', red:'#ef4444', pink:'#ec4899', cyan:'#06b6d4' };
+                list.innerHTML = snap.docs.map(d => {
+                    const g = d.data();
+                    const c = colorMap[g.color] || '#3b82f6';
+                    const thumb = g.thumbnail ? `<img src="${g.thumbnail}" class="w-10 h-10 rounded-lg object-cover border border-slate-700">` : `<div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:${c}22;"><i class="fa-solid ${g.icon||'fa-gamepad'} text-sm" style="color:${c}"></i></div>`;
+                    return `<div class="game-card">
+                        ${thumb}
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-200 truncate">${g.name}</p>
+                            <p class="text-xs text-slate-500 truncate font-mono-tech">${g.id}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="${g.url}" target="_blank" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-blue-400 transition text-xs" title="Mở game"><i class="fa-solid fa-play"></i></a>
+                            <button onclick="deleteGame('${g.id}', '${g.name.replace(/'/g,"\\'")}') " class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-950 flex items-center justify-center text-slate-400 hover:text-red-400 transition text-xs" title="Xóa game"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            });
+        }
+
+        window.deleteGame = async (id, name) => {
+            if (!confirm(`Xóa game "${name}" khỏi danh sách?\n(File HTML trên GitHub vẫn giữ nguyên)`)) return;
+            try {
+                await deleteDoc(doc(db, "games", id));
+                toast(`Đã xóa "${name}" khỏi danh sách.`);
+            } catch (e) { toast('Lỗi xóa: ' + e.message, 'error'); }
+        };
+
+        // ===== STATS =====
+        async function loadStats() {
+            // Visitors
+            try {
+                const snap = await getDoc(doc(db, "stats", "visitors"));
+                if (snap.exists()) document.getElementById('statVisitors').textContent = snap.data().total?.toLocaleString() || '0';
+            } catch {}
+
+            // Comments count
+            try {
+                const snap = await getDocs(collection(db, "comments"));
+                document.getElementById('statComments').textContent = snap.size;
+            } catch {}
+
+            // Storage (placeholder)
+            document.getElementById('statStorage').textContent = '< 5GB';
+
+            // Recent comments
+            const q = query(collection(db, "comments"), orderBy("time", "desc"), limit(5));
+            onSnapshot(q, snap => {
+                const el = document.getElementById('recentComments');
+                if (snap.empty) { el.innerHTML = '<p class="text-slate-600 text-sm text-center py-4">Chưa có bình luận nào.</p>'; return; }
+                el.innerHTML = snap.docs.map(d => {
+                    const data = d.data();
+                    const time = data.time ? new Date(data.time.seconds * 1000).toLocaleString('vi-VN') : 'Vừa xong';
+                    return `<div class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3">
+                        <p class="text-sm text-slate-300">${data.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+                        <p class="text-xs text-slate-600 mt-1"><i class="fa-solid fa-clock mr-1"></i>${time}</p>
+                    </div>`;
+                }).join('');
+            });
+        }
+
+        // ===== DESIGN SETTINGS =====
+        let designState = {
+            accentColor: '#3b82f6',
+            bgColor: '#030712',
+            font: 'Inter',
+            logoMain: 'GAM',
+            logoAccent: 'HUB',
+            headerTagline: 'Arcade Portal',
+            sectionNewName: '🌟 GAME MỚI PHÁT HÀNH',
+            sectionWarmName: '🔥 WARM-UP GAMES',
+            footerText: '© 2026 GamHub.Store. Thiết kế và tối ưu bởi Senior Web Game.',
+            showComments: true,
+            showWarmup: true,
+            showVisitor: true,
+            showOnline: true
+        };
+
+        async function loadDesignSettings() {
+            try {
+                const snap = await getDoc(doc(db, "settings", "design"));
+                if (snap.exists()) {
+                    designState = { ...designState, ...snap.data() };
+                    applyDesignToForm(designState);
+                }
+            } catch {}
+        }
+
+        function applyDesignToForm(s) {
+            document.querySelectorAll('#accentSwatches .swatch').forEach(sw => {
+                sw.classList.toggle('selected', sw.dataset.color === s.accentColor);
+            });
+            document.querySelectorAll('#bgSwatches .swatch').forEach(sw => {
+                sw.classList.toggle('selected', sw.dataset.color === s.bgColor);
+            });
+            const fields = ['font','logoMain','logoAccent','headerTagline','sectionNewName','sectionWarmName','footerText'];
+            fields.forEach(f => { const el = document.getElementById(f === 'font' ? 'fontChoice' : f); if (el && s[f] !== undefined) el.value = s[f]; });
+            document.getElementById('toggleComments').checked = s.showComments !== false;
+            document.getElementById('toggleWarmup').checked = s.showWarmup !== false;
+            document.getElementById('toggleVisitor').checked = s.showVisitor !== false;
+            document.getElementById('toggleOnline').checked = s.showOnline !== false;
+        }
+
+        // Swatch clicks
+        document.querySelectorAll('#accentSwatches .swatch').forEach(sw => {
+            sw.addEventListener('click', () => {
+                document.querySelectorAll('#accentSwatches .swatch').forEach(s => s.classList.remove('selected'));
+                sw.classList.add('selected');
+                designState.accentColor = sw.dataset.color;
+            });
+        });
+        document.querySelectorAll('#bgSwatches .swatch').forEach(sw => {
+            sw.addEventListener('click', () => {
+                document.querySelectorAll('#bgSwatches .swatch').forEach(s => s.classList.remove('selected'));
+                sw.classList.add('selected');
+                designState.bgColor = sw.dataset.color;
+            });
+        });
+
+        document.getElementById('btnSaveDesign').addEventListener('click', async () => {
+            const btn = document.getElementById('btnSaveDesign');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Đang lưu...';
+            try {
+                const data = {
+                    accentColor: designState.accentColor,
+                    bgColor: designState.bgColor,
+                    font: document.getElementById('fontChoice').value,
+                    logoMain: document.getElementById('logoMain').value,
+                    logoAccent: document.getElementById('logoAccent').value,
+                    headerTagline: document.getElementById('headerTagline').value,
+                    sectionNewName: document.getElementById('sectionNewName').value,
+                    sectionWarmName: document.getElementById('sectionWarmName').value,
+                    footerText: document.getElementById('footerText').value,
+                    showComments: document.getElementById('toggleComments').checked,
+                    showWarmup: document.getElementById('toggleWarmup').checked,
+                    showVisitor: document.getElementById('toggleVisitor').checked,
+                    showOnline: document.getElementById('toggleOnline').checked,
+                    updatedAt: serverTimestamp()
+                };
+                await setDoc(doc(db, "settings", "design"), data);
+                toast('✅ Giao diện đã lưu! Trang chủ sẽ áp dụng ngay.');
+            } catch (e) { toast('Lỗi lưu: ' + e.message, 'error'); }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> LƯU CÀI ĐẶT GIAO DIỆN';
+        });
+
+        // Enter to login
+        document.getElementById('loginPassword').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('btnLogin').click();
         });
     </script>
 </body>

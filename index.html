@@ -166,11 +166,11 @@
             </div>
         </div>
         <div class="flex-1 flex flex-col items-center justify-center p-2 md:p-4">
-            <div class="relative w-full max-w-2xl aspect-[16/10] md:aspect-[16/9] bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl">
+            <div class="relative w-full max-w-4xl h-[75vh] md:h-[82vh] bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl">
                 
                 <canvas id="gameCanvas" class="w-full h-full bg-black"></canvas>
 
-                <iframe id="gameIframe" class="hidden w-full h-full bg-black" frameborder="0" scrolling="no" allow="autoplay; fullscreen; camera"></iframe>
+                <iframe id="gameIframe" class="hidden w-full h-full bg-black" frameborder="0" allow="autoplay; fullscreen; camera"></iframe>
 
                 <div id="gameOverOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                     <h4 class="text-3xl md:text-5xl font-black font-orbitron text-red-500 tracking-wider mb-2 animate-bounce">GAME OVER</h4>
@@ -214,7 +214,6 @@
         const gameHighScoreText = document.getElementById('gameHighScore');
         const gameOverOverlay = document.getElementById('gameOverOverlay');
         
-        // BIẾN QUẢN LÝ DYNAMIC GAME
         const gameIframe = document.getElementById('gameIframe');
         const mobileControls = document.getElementById('mobileControls');
 
@@ -262,7 +261,6 @@
             gameScoreText.innerText = 0; gameHighScoreText.innerText = highScores[gameKey] || 0;
             gameOverOverlay.classList.add('hidden'); gameCabinet.classList.remove('hidden');
 
-            // Luôn bật Canvas, Tắt Iframe khi chơi Game cũ
             canvas.classList.remove('hidden');
             gameIframe.classList.add('hidden');
             mobileControls.classList.remove('hidden');
@@ -276,7 +274,7 @@
             gameCabinet.classList.add('hidden'); 
             isGameOver = true; 
             activeGame = null; 
-            gameIframe.src = "about:blank"; // Xóa cache Iframe
+            gameIframe.src = "about:blank"; 
         }
         
         function restartActiveGame() { startGame(activeGame); }
@@ -330,7 +328,7 @@
             gridOffset = (gridOffset - runnerSpeed) % 80;
             ctx.strokeStyle='#220847'; ctx.lineWidth=2;
             for (let x = gridOffset; x < canvas.width; x += 80) { ctx.beginPath(); ctx.moveTo(x,groundY); ctx.lineTo(x,canvas.height); ctx.stroke(); }
-            ctx.strokeStyle='#a855f7'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(0,groundY+10); ctx.lineTo(canvas.width,groundY+10); ctx.stroke();
+            ctx.strokeStyle='#a855f7'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(0,groundY+10); ctx.lineTo(canvas.width,groundY+10); stroke();
             ctx.save(); ctx.translate(runner.x, runner.y); ctx.shadowBlur=15; ctx.shadowColor='#fbbf24'; ctx.fillStyle='#fbbf24'; ctx.fillRect(-runner.width/2,-runner.height,runner.width,runner.height); ctx.restore();
             obstacleTimer++;
             if (obstacleTimer > 70) { obstacles.push({ x:canvas.width+50, y:groundY+10, width:40, height:Math.random()*40+40 }); obstacleTimer=0; if (runnerSpeed<18) runnerSpeed+=0.2; }
@@ -460,22 +458,19 @@
 
         // --- 3. HỆ THỐNG LOAD GAME TỰ ĐỘNG TỪ FIREBASE ---
         const gameGrid = document.getElementById('gameGrid');
-        window.dynamicGames = {}; // Lưu trữ dữ liệu game cho hàm JS bên ngoài gọi
+        window.dynamicGames = {}; 
 
         const qGames = query(collection(db, "games"), orderBy("createdAt", "asc"));
         onSnapshot(qGames, (snapshot) => {
-            // Xóa các game động đã load trước đó để tránh trùng lặp
             document.querySelectorAll('.dynamic-game').forEach(el => el.remove());
             
             snapshot.docs.forEach(doc => {
                 const g = doc.data();
-                window.dynamicGames[g.id] = g.url; // Lưu link iframe
+                window.dynamicGames[g.id] = g.url; 
                 
-                // Lấy thông số từ Admin, nếu không có lấy mặc định
                 const c = g.color || 'blue';
                 const icon = g.icon || 'fa-gamepad';
                 
-                // Vẽ mã HTML cho thẻ Game
                 const htmlContent = `
                 <div class="dynamic-game bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-${c}-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
@@ -495,7 +490,6 @@
                     </div>
                 </div>`;
                 
-                // Nhúng nối tiếp vào lưới hiển thị
                 gameGrid.insertAdjacentHTML('beforeend', htmlContent);
             });
         });
@@ -512,16 +506,13 @@
             const cabinetTitle = document.getElementById('cabinetGameTitle');
             const gameOverOverlay = document.getElementById('gameOverOverlay');
             
-            // Chuyển chế độ sang iFrame, Tắt Canvas và nút bấm ảo
             canvas.classList.add('hidden');
             mobileControls.classList.add('hidden');
             gameIframe.classList.remove('hidden');
             
-            // Gắn link Game vào Iframe
             gameIframe.src = url;
             cabinetTitle.innerText = gameId.toUpperCase();
             
-            // Bật Tủ Game lên
             gameOverOverlay.classList.add('hidden');
             gameCabinet.classList.remove('hidden');
             setTimeout(() => { gameIframe.focus(); }, 100);

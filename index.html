@@ -461,7 +461,18 @@
             }
         };
 
-        let currentLang = localStorage.getItem('gamhub_lang') || 'vi';
+        // Xác định ngôn ngữ ban đầu:
+        // 1. Nếu khách đã từng tự chọn (lưu trong localStorage) -> dùng lựa chọn đó
+        // 2. Nếu chưa từng chọn -> tự nhận diện ngôn ngữ trình duyệt, không phải tiếng Việt thì set EN
+        function detectInitialLang() {
+            const saved = localStorage.getItem('gamhub_lang');
+            if (saved) return saved;
+            const browserLangs = navigator.languages || [navigator.language || 'vi'];
+            const isVietnamese = browserLangs.some(l => l.toLowerCase().startsWith('vi'));
+            return isVietnamese ? 'vi' : 'en';
+        }
+
+        let currentLang = detectInitialLang();
 
         function applyLang() {
             const dict = i18n[currentLang];

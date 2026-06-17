@@ -477,7 +477,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+        // Firebase Storage không dùng nữa — thumbnail upload lên GitHub
 
         // ===== CONFIG =====
         const GITHUB_USER = "nguyenducanh220999-rgb";
@@ -496,7 +496,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
+        // storage removed
 
         // ===== TOAST =====
         function toast(msg, type = 'success') {
@@ -608,22 +608,53 @@
             preview.innerHTML = `<img src="${url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'text-center text-red-400 p-4\\'><i class=\\'fa-solid fa-image-slash text-2xl\\'></i><p class=\\'text-xs mt-1\\'>Ảnh lỗi</p></div>'">`;
         }
 
-        async function uploadThumbnail(gameId) {
+        async function uploadThumbnail(gameId, token) {
             if (thumbUrlInput.value.trim()) return thumbUrlInput.value.trim();
             if (!thumbFile.files[0]) return '';
             const file = thumbFile.files[0];
             const progressBar = document.getElementById('thumbUploadProgress');
             const fill = document.getElementById('thumbProgressFill');
             progressBar.classList.remove('hidden');
-            return new Promise((resolve, reject) => {
-                const storageRef = ref(storage, `thumbnails/${gameId}_${Date.now()}`);
-                const task = uploadBytesResumable(storageRef, file);
-                task.on('state_changed',
-                    snap => fill.style.width = (snap.bytesTransferred / snap.totalBytes * 100) + '%',
-                    err => { toast('Lỗi upload ảnh: ' + err.message, 'error'); reject(err); },
-                    async () => { const url = await getDownloadURL(task.snapshot.ref); resolve(url); }
-                );
+            fill.style.width = '30%';
+
+            // Đọc file ảnh dưới dạng base64
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
+            fill.style.width = '60%';
+
+            // Upload ảnh lên GitHub vào thư mục /thumbnails/
+            const ext = file.name.split('.').pop();
+            const thumbFilename = `thumbnails/${gameId}_${Date.now()}.${ext}`;
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${thumbFilename}`;
+
+            // Check nếu file đã tồn tại
+            let sha = '';
+            try {
+                const check = await fetch(apiUrl, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+                if (check.ok) { const data = await check.json(); sha = data.sha; }
+            } catch {}
+
+            const body = { message: `🖼️ Upload thumbnail: ${gameId}`, content: base64, branch: GITHUB_BRANCH };
+            if (sha) body.sha = sha;
+
+            const res = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error('Lỗi upload ảnh: ' + (err.message || 'GitHub API error'));
+            }
+            fill.style.width = '100%';
+
+            // Trả về URL raw của ảnh trên GitHub
+            const thumbUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${thumbFilename}`;
+            return thumbUrl;
         }
 
         // ===== PUSH FILE TO GITHUB =====
@@ -673,8 +704,9 @@
                 // 1. Upload thumbnail
                 let thumbUrl = '';
                 if (thumbFile.files[0] || thumbUrlInput.value.trim()) {
-                    btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Đang upload ảnh...';
-                    thumbUrl = await uploadThumbnail(id);
+                    btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Đang upload ảnh lên GitHub...';
+                    if (thumbFile.files[0] && !token) return toast('Cần nhập GitHub Token để upload ảnh!', 'error');
+                    thumbUrl = await uploadThumbnail(id, token);
                     document.getElementById('thumbUploadProgress').classList.add('hidden');
                 }
 

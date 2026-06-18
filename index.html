@@ -268,10 +268,9 @@
                 <div class="bg-black/40 border border-slate-800 px-3 py-1 rounded text-xs font-mono hidden md:block">Highscore: <span id="gameHighScore" class="text-yellow-400 font-bold">0</span></div>
             </div>
         </div>
-        <div class="flex-1 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden" style="min-height:0;">
-            <div class="relative w-full max-w-4xl bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl flex flex-col" style="aspect-ratio:16/9; max-height:100%; min-height:0;">
+        <div class="flex-1 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden" style="min-height:0; position:relative; flex:1 1 0%; height:100%;">
+            <div id="canvasWrapper" class="relative w-full max-w-4xl bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl flex flex-col" style="aspect-ratio:16/9; max-height:100%; min-height:0;">
                 <canvas id="gameCanvas" class="w-full bg-black" style="display:block; flex:1 1 auto; min-height:0;"></canvas>
-                <iframe id="gameIframe" class="hidden w-full bg-black" style="flex:1 1 auto; min-height:0; border:0;" scrolling="yes" allow="autoplay; fullscreen; camera"></iframe>
                 <div id="gameOverOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                     <h4 class="text-3xl md:text-5xl font-black font-orbitron text-red-500 tracking-wider mb-2 animate-bounce" data-i18n="gameOver">GAME OVER</h4>
                     <p class="text-slate-400 text-sm mb-6" data-i18n="gameOverDesc">Bạn đã chơi rất tốt! Hãy thử lại một lần nữa.</p>
@@ -280,6 +279,7 @@
                     </button>
                 </div>
             </div>
+            <iframe id="gameIframe" style="display:none; position:absolute; inset:0; border:0; background:#000;" scrolling="yes" allow="autoplay; fullscreen; camera"></iframe>
         </div>
         <div class="bg-slate-900 border-t border-slate-800 p-4 flex flex-col gap-3 shrink-0">
             <div class="flex items-center justify-between text-xs text-slate-500 font-mono">
@@ -396,8 +396,8 @@
             gameOverOverlay.classList.add('hidden'); 
             openCabinetWithGlitch();
             document.body.style.overflow = "hidden";
-            canvas.classList.remove('hidden');
-            gameIframe.classList.add('hidden');
+            document.getElementById('canvasWrapper').style.display = 'flex';
+            gameIframe.style.display = 'none';
             mobileControls.classList.remove('hidden');
             if (gameKey === 'space') { cabinetGameTitle.innerText = "🌌 " + (i18n[currentLang].spaceStormTitle || "SPACE STORM").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionShoot; initSpaceGame(); }
             else if (gameKey === 'runner') { cabinetGameTitle.innerText = "🏃 " + (i18n[currentLang].cyberRunnerTitle || "CYBER RUNNER").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionJump; initRunnerGame(); }
@@ -405,7 +405,7 @@
             else if (gameKey === 'coin') { cabinetGameTitle.innerText = "🪙 " + (i18n[currentLang].coinCatcherTitle || "COIN CATCHER").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionCatch; initCoinGame(); }
         }
 
-        function closeCabinet() { gameCabinet.style.display = 'none'; isGameOver = true; activeGame = null; gameIframe.src = "about:blank"; document.body.style.overflow = "auto"; }
+        function closeCabinet() { gameCabinet.style.display = 'none'; isGameOver = true; activeGame = null; gameIframe.style.display = 'none'; gameIframe.src = "about:blank"; document.body.style.overflow = "auto"; }
         function restartActiveGame() { startGame(activeGame); }
         let lives = 0;
         function loseLife() {
@@ -864,9 +864,14 @@
             const cabinetTitle = document.getElementById('cabinetGameTitle');
             const gameOverOverlay = document.getElementById('gameOverOverlay');
             document.body.style.overflow = "hidden";
-            canvas.classList.add('hidden');
+            document.getElementById('canvasWrapper').style.display = 'none';
             mobileControls.classList.add('hidden');
-            gameIframe.classList.remove('hidden');
+            gameIframe.style.display = 'block';
+            gameIframe.style.position = 'absolute';
+            gameIframe.style.top = '0';
+            gameIframe.style.left = '0';
+            gameIframe.style.width = '100%';
+            gameIframe.style.height = '100%';
             gameIframe.src = url;
             cabinetTitle.innerText = gameId.toUpperCase();
             gameOverOverlay.classList.add('hidden');

@@ -70,19 +70,22 @@
         #warmupGrid button { box-shadow: 3px 3px 0 rgba(0,0,0,0.35); }
         #warmupGrid button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
 
-        /* ===== Cabinet open glitch transition (safe overlay flash, never hides real content) ===== */
+        /* ===== Cabinet open fade+zoom transition ===== */
         #cabinetGlitchOverlay {
             position:absolute; inset:0; z-index:100; pointer-events:none;
-            background:#0a0118; opacity:0; display:none;
+            background:#020617; opacity:0; display:none;
         }
-        #cabinetGlitchOverlay.fx-active { display:block; animation: cabinetGlitchFlash .4s steps(2,end) forwards; }
-        @keyframes cabinetGlitchFlash {
-            0% { opacity:1; clip-path: inset(0 0 0 0); transform:translateX(0); filter:hue-rotate(0deg); }
-            15% { opacity:1; clip-path: inset(20% 0 60% 0); transform:translateX(-8px); }
-            30% { opacity:0.9; clip-path: inset(0 0 30% 0); transform:translateX(8px); filter:hue-rotate(60deg); }
-            50% { opacity:0.7; clip-path: inset(55% 0 0 0); transform:translateX(-4px); }
-            70% { opacity:0.4; clip-path: inset(0 0 10% 0); transform:translateX(4px); filter:hue-rotate(0deg); }
-            100% { opacity:0; transform:translateX(0); }
+        #cabinetGlitchOverlay.fx-active { display:block; animation: cabinetFadeZoom .35s ease forwards; }
+        @keyframes cabinetFadeZoom {
+            0% { opacity:1; transform: scale(0.88); }
+            60% { opacity:0.3; transform: scale(1.01); }
+            100% { opacity:0; transform: scale(1); }
+        }
+        #gameCabinet { transform-origin: center center; }
+        #gameCabinet.cabinet-open { animation: cabinetZoomIn .35s cubic-bezier(.22,1,.36,1) both; }
+        @keyframes cabinetZoomIn {
+            0% { opacity:0; transform: scale(0.88); }
+            100% { opacity:1; transform: scale(1); }
         }
     </style>
 </head>
@@ -380,13 +383,17 @@
 
         function openCabinetWithGlitch() {
             gameCabinet.style.display = 'flex';
-            playSound('glitch');
+            gameCabinet.classList.remove('cabinet-open');
+            void gameCabinet.offsetWidth;
+            gameCabinet.classList.add('cabinet-open');
+            setTimeout(() => gameCabinet.classList.remove('cabinet-open'), 400);
+            playSound('jump');
             const overlay = document.getElementById('cabinetGlitchOverlay');
             if (overlay) {
                 overlay.classList.remove('fx-active');
                 void overlay.offsetWidth;
                 overlay.classList.add('fx-active');
-                setTimeout(() => overlay.classList.remove('fx-active'), 450);
+                setTimeout(() => overlay.classList.remove('fx-active'), 400);
             }
         }
 
@@ -876,13 +883,17 @@
             cabinetTitle.innerText = gameId.toUpperCase();
             gameOverOverlay.classList.add('hidden');
             gameCabinet.style.display = 'flex';
-            if (typeof playSound === 'function') playSound('glitch');
+            gameCabinet.classList.remove('cabinet-open');
+            void gameCabinet.offsetWidth;
+            gameCabinet.classList.add('cabinet-open');
+            setTimeout(() => gameCabinet.classList.remove('cabinet-open'), 400);
+            if (typeof playSound === 'function') playSound('jump');
             const dynOverlay = document.getElementById('cabinetGlitchOverlay');
             if (dynOverlay) {
                 dynOverlay.classList.remove('fx-active');
                 void dynOverlay.offsetWidth;
                 dynOverlay.classList.add('fx-active');
-                setTimeout(() => dynOverlay.classList.remove('fx-active'), 450);
+                setTimeout(() => dynOverlay.classList.remove('fx-active'), 400);
             }
             setTimeout(() => { gameIframe.focus(); }, 100);
         };

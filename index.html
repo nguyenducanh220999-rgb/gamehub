@@ -69,6 +69,17 @@
         #warmupGrid button { image-rendering:pixelated; transition: transform .08s ease, box-shadow .08s ease; }
         #warmupGrid button { box-shadow: 3px 3px 0 rgba(0,0,0,0.35); }
         #warmupGrid button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
+
+        /* ===== Cabinet open glitch transition ===== */
+        #gameCabinet.cabinet-glitch-in { animation: cabinetGlitchIn .4s steps(2,end); }
+        @keyframes cabinetGlitchIn {
+            0% { clip-path: inset(0 0 100% 0); filter: hue-rotate(0deg); }
+            20% { clip-path: inset(20% 0 60% 0); transform: translateX(-6px); }
+            40% { clip-path: inset(0 0 30% 0); transform: translateX(6px); filter: hue-rotate(40deg); }
+            60% { clip-path: inset(50% 0 0 0); transform: translateX(-3px); }
+            80% { clip-path: inset(0 0 10% 0); transform: translateX(3px); filter: hue-rotate(0deg); }
+            100% { clip-path: inset(0 0 0 0); transform: translateX(0); }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
@@ -253,9 +264,9 @@
             </div>
         </div>
         <div class="flex-1 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden" style="min-height:0;">
-            <div class="relative w-full max-w-4xl bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl flex flex-col" style="aspect-ratio:16/9; max-height:100%;">
-                <canvas id="gameCanvas" class="w-full h-full bg-black" style="display:block;"></canvas>
-                <iframe id="gameIframe" class="hidden w-full h-full bg-black" frameborder="0" scrolling="yes" allow="autoplay; fullscreen; camera"></iframe>
+            <div class="relative w-full max-w-4xl bg-black rounded-lg overflow-hidden border border-slate-800 shadow-2xl flex flex-col" style="aspect-ratio:16/9; max-height:100%; min-height:0;">
+                <canvas id="gameCanvas" class="w-full bg-black" style="display:block; flex:1 1 auto; min-height:0;"></canvas>
+                <iframe id="gameIframe" class="hidden w-full bg-black" style="flex:1 1 auto; min-height:0; border:0;" scrolling="yes" allow="autoplay; fullscreen; camera"></iframe>
                 <div id="gameOverOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                     <h4 class="text-3xl md:text-5xl font-black font-orbitron text-red-500 tracking-wider mb-2 animate-bounce" data-i18n="gameOver">GAME OVER</h4>
                     <p class="text-slate-400 text-sm mb-6" data-i18n="gameOverDesc">Bạn đã chơi rất tốt! Hãy thử lại một lần nữa.</p>
@@ -311,6 +322,30 @@
                 else if (type === 'explosion') { osc.type='triangle'; osc.frequency.setValueAtTime(150,now); osc.frequency.exponentialRampToValueAtTime(30,now+0.3); gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.35); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.35); }
                 else if (type === 'jump') { osc.type='sine'; osc.frequency.setValueAtTime(200,now); osc.frequency.exponentialRampToValueAtTime(600,now+0.2); gain.gain.setValueAtTime(0.2,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.2); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.2); }
                 else if (type === 'hit') { osc.type='square'; osc.frequency.setValueAtTime(400,now); osc.frequency.setValueAtTime(600,now+0.08); gain.gain.setValueAtTime(0.15,now); gain.gain.exponentialRampToValueAtTime(0.01,now+0.15); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now+0.15); }
+                else if (type === 'glitch') {
+                    const dur = 0.35;
+                    const bufferSize = Math.floor(audioCtx.sampleRate * dur);
+                    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random()*2-1) * (Math.random() > 0.6 ? 1 : 0.15);
+                    const noise = audioCtx.createBufferSource(); noise.buffer = noiseBuffer;
+                    const noiseGain = audioCtx.createGain();
+                    noiseGain.gain.setValueAtTime(0.18, now);
+                    noiseGain.gain.setValueAtTime(0.22, now+0.08);
+                    noiseGain.gain.setValueAtTime(0.05, now+0.15);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, now+dur);
+                    noise.connect(noiseGain); noiseGain.connect(audioCtx.destination);
+                    noise.start(now); noise.stop(now+dur);
+                    osc.type='square';
+                    osc.frequency.setValueAtTime(90,now);
+                    osc.frequency.setValueAtTime(220,now+0.06);
+                    osc.frequency.setValueAtTime(60,now+0.12);
+                    osc.frequency.setValueAtTime(180,now+0.2);
+                    gain.gain.setValueAtTime(0.1,now);
+                    gain.gain.exponentialRampToValueAtTime(0.01,now+dur);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now+dur);
+                }
             } catch(e) {}
         }
 
@@ -338,11 +373,20 @@
 
         function setupCanvasSize() { canvas.width = 1280; canvas.height = 720; }
 
+        function openCabinetWithGlitch() {
+            gameCabinet.classList.remove('hidden');
+            gameCabinet.classList.remove('cabinet-glitch-in');
+            void gameCabinet.offsetWidth;
+            gameCabinet.classList.add('cabinet-glitch-in');
+            playSound('glitch');
+            setTimeout(() => gameCabinet.classList.remove('cabinet-glitch-in'), 450);
+        }
+
         function startGame(gameKey) {
             setupCanvasSize(); activeGame = gameKey; score = 0; isGameOver = false;
             gameScoreText.innerText = 0; gameHighScoreText.innerText = highScores[gameKey] || 0;
             gameOverOverlay.classList.add('hidden'); 
-            gameCabinet.classList.remove('hidden');
+            openCabinetWithGlitch();
             document.body.style.overflow = "hidden";
             canvas.classList.remove('hidden');
             gameIframe.classList.add('hidden');
@@ -819,6 +863,11 @@
             cabinetTitle.innerText = gameId.toUpperCase();
             gameOverOverlay.classList.add('hidden');
             gameCabinet.classList.remove('hidden');
+            gameCabinet.classList.remove('cabinet-glitch-in');
+            void gameCabinet.offsetWidth;
+            gameCabinet.classList.add('cabinet-glitch-in');
+            if (typeof playSound === 'function') playSound('glitch');
+            setTimeout(() => gameCabinet.classList.remove('cabinet-glitch-in'), 450);
             setTimeout(() => { gameIframe.focus(); }, 100);
         };
     </script>

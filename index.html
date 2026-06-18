@@ -24,7 +24,8 @@
         .scanline-overlay { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;
             background:repeating-linear-gradient(0deg, rgba(0,255,255,0.02) 0px, rgba(0,255,255,0.02) 1px, transparent 1px, transparent 3px);
             mix-blend-mode:overlay; }
-        body > *:not(#bgFxCanvas):not(.scanline-overlay) { position:relative; z-index:2; }
+        body > *:not(#bgFxCanvas):not(.scanline-overlay):not(#gameCabinet) { position:relative; z-index:2; }
+        #gameCabinet { position:fixed !important; }
 
         /* ===== Glitch logo ===== */
         .glitch-logo { position:relative; display:inline-block; animation: logoFlicker 5s infinite; }

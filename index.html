@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GamHub Arcade - Cổng Game Web HTML5 Trực Tuyến</title>
+    <title>GamHub Portal</title>
+    <meta name="description" content="GamHub Portal - Chơi game HTML5 trực tuyến miễn phí ngay trên trình duyệt.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -17,19 +18,66 @@
         canvas, button { -webkit-tap-highlight-color: transparent; }
         .game-thumb { width:100%; height:100%; object-fit:cover; transition: transform 0.3s; }
         .group:hover .game-thumb { transform: scale(1.05); }
+
+        /* ===== Background fx (starfield + grid) ===== */
+        #bgFxCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+        .scanline-overlay { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none;
+            background:repeating-linear-gradient(0deg, rgba(0,255,255,0.02) 0px, rgba(0,255,255,0.02) 1px, transparent 1px, transparent 3px);
+            mix-blend-mode:overlay; }
+        body > *:not(#bgFxCanvas):not(.scanline-overlay) { position:relative; z-index:2; }
+
+        /* ===== Glitch logo ===== */
+        .glitch-logo { position:relative; display:inline-block; animation: logoFlicker 5s infinite; }
+        .glitch-logo::before, .glitch-logo::after {
+            content:'GAMHUB'; position:absolute; top:0; left:0; width:100%; height:100%;
+            background:transparent; overflow:hidden; opacity:0.75; pointer-events:none;
+        }
+        .glitch-logo::before { color:#f43f5e; left:2px; clip-path: inset(0 0 85% 0); animation: glitchTop 5s infinite linear; }
+        .glitch-logo::after { color:#22d3ee; left:-2px; clip-path: inset(85% 0 0 0); animation: glitchBot 4.2s infinite linear; }
+        @keyframes logoFlicker { 0%,3%,6%,100% { opacity:1; } 4% { opacity:0.5; } 5% { opacity:0.9; } }
+        @keyframes glitchTop {
+            0% { clip-path: inset(0 0 85% 0); transform: translate(0,0); }
+            20% { clip-path: inset(10% 0 60% 0); transform: translate(-2px,0); }
+            40% { clip-path: inset(40% 0 30% 0); transform: translate(2px,0); }
+            60% { clip-path: inset(60% 0 10% 0); transform: translate(-1px,0); }
+            80% { clip-path: inset(20% 0 65% 0); transform: translate(1px,0); }
+            100% { clip-path: inset(0 0 90% 0); transform: translate(0,0); }
+        }
+        @keyframes glitchBot {
+            0% { clip-path: inset(85% 0 0 0); transform: translate(0,0); }
+            25% { clip-path: inset(55% 0 20% 0); transform: translate(1px,0); }
+            50% { clip-path: inset(30% 0 50% 0); transform: translate(-2px,0); }
+            75% { clip-path: inset(65% 0 5% 0); transform: translate(2px,0); }
+            100% { clip-path: inset(90% 0 0 0); transform: translate(0,0); }
+        }
+
+        /* ===== Card hover/click fx (warm-up game cards) ===== */
+        #warmupGrid > div { position:relative; overflow:hidden; transition: transform .25s ease, box-shadow .25s ease; }
+        #warmupGrid > div::before {
+            content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+            background:linear-gradient(120deg, transparent, rgba(255,255,255,0.08), transparent);
+            transform:translateX(-120%); transition:transform .6s ease;
+        }
+        #warmupGrid > div:hover::before { transform:translateX(120%); }
+        #warmupGrid > div:hover { transform:translateY(-6px); }
+        #warmupGrid > div:active { transform:translateY(-2px) scale(0.99); }
+        .fx-ripple { position:absolute; border-radius:50%; background:rgba(255,255,255,0.45); transform:scale(0);
+            animation:fxRippleAnim .6s ease-out; pointer-events:none; z-index:5; }
+        @keyframes fxRippleAnim { to { transform:scale(4); opacity:0; } }
+
+        /* ===== Pixel-style buttons (play now CTAs) ===== */
+        #warmupGrid button { image-rendering:pixelated; transition: transform .08s ease, box-shadow .08s ease; }
+        #warmupGrid button { box-shadow: 3px 3px 0 rgba(0,0,0,0.35); }
+        #warmupGrid button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+    <canvas id="bgFxCanvas"></canvas>
+    <div class="scanline-overlay"></div>
 
     <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40 px-4 md:px-8 py-4 flex items-center justify-between shadow-md">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <i class="fa-solid fa-gamepad text-white text-xl"></i>
-            </div>
-            <div>
-                <span class="text-xs text-blue-400 font-mono-tech tracking-wider uppercase font-bold" data-i18n="arcadePortal">Arcade Portal</span>
-                <h1 class="text-lg md:text-xl font-black font-orbitron tracking-widest text-white">GAM<span class="text-blue-500">HUB</span></h1>
-            </div>
+            <h1 class="text-lg md:text-xl font-black font-orbitron tracking-widest text-white glitch-logo">GAM<span class="text-blue-500">HUB</span></h1>
         </div>
         <div class="flex items-center gap-2">
             <div class="hidden sm:flex items-center gap-1 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono">
@@ -87,7 +135,7 @@
                 <span class="w-2.5 h-2.5 rounded bg-orange-500 animate-pulse"></span> <span data-i18n="warmupGames">🔥 WARM-UP GAMES</span>
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div id="warmupGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-blue-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
@@ -103,7 +151,7 @@
                         </div>
                     </div>
                     <div class="p-5 pt-0">
-                        <button onclick="startGame('space')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <button onclick="fxRipple(event); startGame('space')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
                             <i class="fa-solid fa-play text-xs"></i> <span data-i18n="playNow">Chơi ngay</span>
                         </button>
                     </div>
@@ -125,7 +173,7 @@
                         </div>
                     </div>
                     <div class="p-5 pt-0">
-                        <button onclick="startGame('runner')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <button onclick="fxRipple(event); startGame('runner')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
                             <i class="fa-solid fa-play text-xs"></i> <span data-i18n="playNow">Chơi ngay</span>
                         </button>
                     </div>
@@ -148,7 +196,7 @@
                         </div>
                     </div>
                     <div class="p-5 pt-0">
-                        <button onclick="startGame('breaker')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <button onclick="fxRipple(event); startGame('breaker')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
                             <i class="fa-solid fa-play text-xs"></i> <span data-i18n="playNow">Chơi ngay</span>
                         </button>
                     </div>
@@ -169,7 +217,7 @@
                         </div>
                     </div>
                     <div class="p-5 pt-0">
-                        <button onclick="startGame('coin')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <button onclick="fxRipple(event); startGame('coin')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
                             <i class="fa-solid fa-play text-xs"></i> <span data-i18n="playNow">Chơi ngay</span>
                         </button>
                     </div>
@@ -237,7 +285,7 @@
     </div>
 
     <footer class="bg-slate-950 border-t border-slate-900 py-8 text-center text-xs text-slate-500 mt-12 px-4">
-        <p class="text-slate-600" data-i18n="footer">© 2026 GamHub.Store. Thiết kế và tối ưu bởi Senior Web Game.</p>
+        <p class="text-slate-600" data-i18n="footer">© 2026 GamHub.Store</p>
     </footer>
 
     <script>
@@ -512,7 +560,7 @@
                 actionJump: "NHẢY",
                 actionHit: "KÍCH BÓNG",
                 actionCatch: "HỨNG",
-                footer: "© 2026 GamHub.Store. Thiết kế và tối ưu bởi Senior Web Game.",
+                footer: "© 2026 GamHub.Store",
                 sendFail: "Gửi thất bại, thử lại!"
             },
             en: {
@@ -551,7 +599,7 @@
                 actionJump: "JUMP",
                 actionHit: "HIT BALL",
                 actionCatch: "CATCH",
-                footer: "© 2026 GamHub.Store. Designed and optimized by Senior Web Game.",
+                footer: "© 2026 GamHub.Store",
                 sendFail: "Failed to send, please try again!"
             }
         };
@@ -773,6 +821,83 @@
             gameCabinet.classList.remove('hidden');
             setTimeout(() => { gameIframe.focus(); }, 100);
         };
+    </script>
+
+    <script>
+        // ===== VISUAL FX: background starfield/grid + click ripple =====
+        function fxRipple(e) {
+            const btn = e.currentTarget;
+            const circle = document.createElement('span');
+            const rect = btn.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            circle.className = 'fx-ripple';
+            circle.style.width = circle.style.height = size + 'px';
+            circle.style.left = (e.clientX - rect.left - size/2) + 'px';
+            circle.style.top = (e.clientY - rect.top - size/2) + 'px';
+            btn.style.position = 'relative';
+            btn.style.overflow = 'hidden';
+            btn.appendChild(circle);
+            setTimeout(() => circle.remove(), 600);
+        }
+
+        (function () {
+            const fxCanvas = document.getElementById('bgFxCanvas');
+            if (!fxCanvas) return;
+            const fxCtx = fxCanvas.getContext('2d');
+            function fxResize() { fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight; }
+            fxResize();
+            window.addEventListener('resize', fxResize);
+
+            const fxStars = [];
+            for (let i = 0; i < 140; i++) {
+                fxStars.push({
+                    x: Math.random() * fxCanvas.width,
+                    y: Math.random() * fxCanvas.height,
+                    r: Math.random() * 1.4 + 0.3,
+                    speed: Math.random() * 0.35 + 0.08,
+                    hue: Math.random() > 0.85 ? '#3b82f6' : '#ffffff'
+                });
+            }
+            const fxGridSpacing = 64;
+            let fxGridOffset = 0;
+
+            function fxLoop() {
+                fxCtx.fillStyle = '#030712';
+                fxCtx.fillRect(0, 0, fxCanvas.width, fxCanvas.height);
+
+                fxCtx.save();
+                fxCtx.strokeStyle = 'rgba(59,130,246,0.07)';
+                fxCtx.lineWidth = 1;
+                const horizon = fxCanvas.height * 0.75;
+                for (let x = -fxCanvas.width; x < fxCanvas.width * 2; x += fxGridSpacing) {
+                    fxCtx.beginPath();
+                    fxCtx.moveTo(fxCanvas.width/2 + (x - fxCanvas.width/2) * 0.12, horizon);
+                    fxCtx.lineTo(x, fxCanvas.height);
+                    fxCtx.stroke();
+                }
+                fxGridOffset = (fxGridOffset + 0.5) % fxGridSpacing;
+                for (let y = horizon; y < fxCanvas.height; y += fxGridSpacing * 0.5) {
+                    const yy = y + fxGridOffset * 0.5;
+                    if (yy > fxCanvas.height) continue;
+                    fxCtx.beginPath();
+                    fxCtx.moveTo(0, yy); fxCtx.lineTo(fxCanvas.width, yy); fxCtx.stroke();
+                }
+                fxCtx.restore();
+
+                fxStars.forEach(s => {
+                    s.y += s.speed;
+                    if (s.y > fxCanvas.height) s.y = 0;
+                    fxCtx.beginPath();
+                    fxCtx.fillStyle = s.hue;
+                    fxCtx.globalAlpha = 0.5 + Math.random() * 0.4;
+                    fxCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    fxCtx.fill();
+                });
+                fxCtx.globalAlpha = 1;
+                requestAnimationFrame(fxLoop);
+            }
+            fxLoop();
+        })();
     </script>
 
 </body>

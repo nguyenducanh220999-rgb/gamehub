@@ -25,7 +25,18 @@
             background:repeating-linear-gradient(0deg, rgba(0,255,255,0.02) 0px, rgba(0,255,255,0.02) 1px, transparent 1px, transparent 3px);
             mix-blend-mode:overlay; }
         body > *:not(#bgFxCanvas):not(.scanline-overlay):not(#gameCabinet) { position:relative; z-index:2; }
-        #gameCabinet { position:fixed !important; }
+        
+        #gameCabinet { 
+            position: fixed !important; 
+            top: 0 !important; 
+            left: 0 !important; 
+            width: 100vw !important; 
+            height: 100vh !important; 
+            height: 100dvh !important;
+            z-index: 99999 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
 
         /* ===== Glitch logo ===== */
         .glitch-logo { position:relative; display:inline-block; animation: logoFlicker 5s infinite; }
@@ -396,7 +407,10 @@
             gameScoreText.innerText = 0; gameHighScoreText.innerText = highScores[gameKey] || 0;
             gameOverOverlay.classList.add('hidden'); 
             openCabinetWithGlitch();
+            
+            document.documentElement.style.overflow = "hidden";
             document.body.style.overflow = "hidden";
+            
             canvas.classList.remove('hidden');
             gameIframe.classList.add('hidden');
             mobileControls.classList.remove('hidden');
@@ -406,7 +420,16 @@
             else if (gameKey === 'coin') { cabinetGameTitle.innerText = "🪙 " + (i18n[currentLang].coinCatcherTitle || "COIN CATCHER").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionCatch; initCoinGame(); }
         }
 
-        function closeCabinet() { gameCabinet.classList.add('hidden'); isGameOver = true; activeGame = null; gameIframe.src = "about:blank"; document.body.style.overflow = "auto"; }
+        function closeCabinet() { 
+            gameCabinet.classList.add('hidden'); 
+            isGameOver = true; 
+            activeGame = null; 
+            gameIframe.src = "about:blank"; 
+            
+            document.documentElement.style.overflow = ""; 
+            document.body.style.overflow = ""; 
+        }
+        
         function restartActiveGame() { startGame(activeGame); }
         let lives = 0;
         function loseLife() {
@@ -658,8 +681,6 @@
         };
 
         // Xác định ngôn ngữ ban đầu:
-        // 1. Nếu khách đã từng tự chọn (lưu trong localStorage) -> dùng lựa chọn đó
-        // 2. Nếu chưa từng chọn -> tự nhận diện ngôn ngữ trình duyệt, không phải tiếng Việt thì set EN
         function detectInitialLang() {
             const saved = localStorage.getItem('gamhub_lang');
             if (saved) return saved;
@@ -682,7 +703,6 @@
             });
             document.getElementById('langLabel').textContent = currentLang === 'vi' ? 'VN' : 'EN';
             document.documentElement.lang = currentLang;
-            // Render lại comment list và game grid theo ngôn ngữ mới (nếu đã load)
             if (window.renderComments) window.renderComments();
             if (window.renderGames) window.renderGames();
         }
@@ -757,7 +777,6 @@
             sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane text-xs"></i> ' + i18n[currentLang].sendAnon;
         });
 
-        // Lưu lại danh sách comment để render lại khi đổi ngôn ngữ
         let cachedComments = [];
         window.renderComments = function() {
             if (cachedComments.length === 0) {
@@ -794,8 +813,6 @@
             cyan:    { border:'border-cyan-500/50',   icon:'text-cyan-500/80',   btn:'bg-cyan-600 hover:bg-cyan-500',     title:'group-hover:text-cyan-400'   },
         };
 
-        // Lưu lại danh sách game để render lại khi đổi ngôn ngữ.
-        // Nếu admin đã thêm field nameEn/descriptionEn vào Firestore, sẽ tự ưu tiên dùng khi ở chế độ EN.
         let cachedGames = [];
         window.renderGames = function() {
             dynamicGameGrid.innerHTML = '';
@@ -864,7 +881,10 @@
             const gameCabinet = document.getElementById('gameCabinet');
             const cabinetTitle = document.getElementById('cabinetGameTitle');
             const gameOverOverlay = document.getElementById('gameOverOverlay');
+            
+            document.documentElement.style.overflow = "hidden";
             document.body.style.overflow = "hidden";
+            
             canvas.classList.add('hidden');
             mobileControls.classList.add('hidden');
             gameIframe.classList.remove('hidden');
@@ -880,7 +900,8 @@
                 dynOverlay.classList.add('fx-active');
                 setTimeout(() => dynOverlay.classList.remove('fx-active'), 450);
             }
-            setTimeout(() => { gameIframe.focus(); }, 100);
+            
+            setTimeout(() => { gameIframe.focus({ preventScroll: true }); }, 100);
         };
     </script>
 

@@ -51,7 +51,7 @@
             100% { clip-path: inset(90% 0 0 0); transform: translate(0,0); }
         }
 
-        /* ===== Card hover/click fx (warm-up game cards) ===== */
+        /* ===== Card hover/click fx ===== */
         #warmupGrid > div { position:relative; overflow:hidden; transition: transform .25s ease, box-shadow .25s ease; }
         #warmupGrid > div::before {
             content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
@@ -65,7 +65,7 @@
             animation:fxRippleAnim .6s ease-out; pointer-events:none; z-index:5; }
         @keyframes fxRippleAnim { to { transform:scale(4); opacity:0; } }
 
-        /* ===== Pixel-style buttons (play now CTAs) ===== */
+        /* ===== Pixel-style buttons ===== */
         #warmupGrid button { image-rendering:pixelated; transition: transform .08s ease, box-shadow .08s ease; }
         #warmupGrid button { box-shadow: 3px 3px 0 rgba(0,0,0,0.35); }
         #warmupGrid button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
@@ -486,6 +486,20 @@
             }
         }
 
+        // HÀM VẼ KHỐI 3D SỬ DỤNG CHUNG (Dùng cho Runner và Breaker)
+        function draw3DBox(ctx, x, y, w, h, d, frontColor, topColor, sideColor, glowColor) {
+            ctx.save();
+            if(glowColor) { ctx.shadowBlur = 15; ctx.shadowColor = glowColor; }
+            ctx.fillStyle = frontColor; ctx.fillRect(x, y, w, h); // Mặt trước
+            ctx.fillStyle = topColor; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + d, y - d); ctx.lineTo(x + w + d, y - d); ctx.lineTo(x + w, y); ctx.closePath(); ctx.fill(); // Mặt trên
+            ctx.fillStyle = sideColor; ctx.beginPath(); ctx.moveTo(x + w, y); ctx.lineTo(x + w + d, y - d); ctx.lineTo(x + w + d, y + h - d); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fill(); // Mặt hông
+            ctx.shadowBlur = 0; ctx.strokeStyle = glowColor || 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, w, h); 
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + d, y - d); ctx.lineTo(x + w + d, y - d); ctx.lineTo(x + w, y); ctx.closePath(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x + w, y); ctx.lineTo(x + w + d, y - d); ctx.lineTo(x + w + d, y + h - d); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.stroke();
+            ctx.restore();
+        }
+
         // SPACE STORM (enhanced visuals)
         let player, playerLasers, enemies, spaceStars, lastLaserTime = 0, spaceParticles, spacePulse;
         function initSpaceGame() {
@@ -511,12 +525,10 @@
             ctx.save();
             applyShake(ctx);
 
-            // background: deep gradient + nebula glow
             const bg = ctx.createRadialGradient(canvas.width/2, canvas.height*0.3, 50, canvas.width/2, canvas.height*0.3, canvas.height);
             bg.addColorStop(0, '#0a0a2e'); bg.addColorStop(1, '#02020a');
             ctx.fillStyle = bg; ctx.fillRect(-50,-50,canvas.width+100,canvas.height+100);
 
-            // parallax stars (2 layers, far stars twinkle)
             spaceStars.forEach(s => {
                 s.y += s.speed;
                 if (s.y > canvas.height) s.y = 0;
@@ -528,14 +540,12 @@
                 ctx.restore();
             });
 
-            // player ship: gradient hull + engine flame + wing glow + side fins
             ctx.save(); ctx.translate(player.x, player.y);
             const engineFlicker = 8 + Math.sin(spacePulse*4)*3;
             const flame = ctx.createRadialGradient(0,30,1,0,30,engineFlicker);
             flame.addColorStop(0,'rgba(96,165,250,0.95)'); flame.addColorStop(0.5,'rgba(59,130,246,0.5)'); flame.addColorStop(1,'rgba(59,130,246,0)');
             ctx.fillStyle = flame; ctx.beginPath(); ctx.arc(0,28,engineFlicker,0,Math.PI*2); ctx.fill();
             ctx.shadowBlur=18; ctx.shadowColor='#3b82f6';
-            // side fins (detail)
             const finGrad = ctx.createLinearGradient(0,0,0,20);
             finGrad.addColorStop(0,'#60a5fa'); finGrad.addColorStop(1,'#1e3a8a');
             ctx.fillStyle = finGrad;
@@ -551,7 +561,6 @@
 
             if (Math.random() < 0.03) enemies.push({ x: Math.random()*(canvas.width-80)+40, y: -40, width: 45, height: 40, speed: Math.random()*3+3, rot: Math.random()*Math.PI*2, spin:(Math.random()-0.5)*0.06 });
 
-            // lasers with glow trail
             playerLasers.forEach((l, idx) => {
                 l.y -= l.speed;
                 ctx.save(); ctx.shadowBlur=14; ctx.shadowColor='#60a5fa';
@@ -562,7 +571,6 @@
                 if (l.y < -30) playerLasers.splice(idx,1);
             });
 
-            // enemies: gradient + slow rotation + side spikes (more detail)
             enemies.forEach((e, eIdx) => {
                 e.y += e.speed; e.rot += e.spin;
                 ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.rot);
@@ -571,7 +579,6 @@
                 eg.addColorStop(0,'#fca5a5'); eg.addColorStop(0.5,'#ef4444'); eg.addColorStop(1,'#991b1b');
                 ctx.fillStyle = eg;
                 ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(-22,0); ctx.lineTo(0,20); ctx.lineTo(22,0); ctx.closePath(); ctx.fill();
-                // inner core detail
                 ctx.shadowBlur=0; ctx.fillStyle='rgba(0,0,0,0.3)';
                 ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.fill();
                 ctx.fillStyle='rgba(255,255,255,0.5)';
@@ -589,7 +596,6 @@
                 if (e.y > canvas.height+40) enemies.splice(eIdx,1);
             });
 
-            // particles
             for (let i = spaceParticles.length-1; i>=0; i--) {
                 const p = spaceParticles[i];
                 p.x+=p.vx; p.y+=p.vy; p.vx*=0.95; p.vy*=0.95; p.life-=p.decay;
@@ -600,113 +606,140 @@
 
             updateAndDrawCombo(ctx);
             ctx.restore();
-
             requestAnimationFrame(spaceLoop);
         }
 
-        // CYBER RUNNER (enhanced visuals)
+        // ===== CYBER RUNNER (2.5D SYNTHWAVE EDITION) =====
         let runner, obstacles, runnerSpeed, obstacleTimer, gridOffset, runnerParticles, runnerPulse, wasGrounded;
+
         function initRunnerGame() {
             shakeAmount = 0; resetCombo(); comboFlashText = null;
-            runner = { x:150, y:canvas.height-150, width:45, height:60, vy:0, gravity:1.8, isGrounded:true, jumpPower:-30 };
+            runner = { x: 150, y: canvas.height - 150, width: 40, height: 40, vy: 0, gravity: 1.8, isGrounded: true, jumpPower: -30, depth: 30 };
             obstacles = []; runnerSpeed = 9; obstacleTimer = 0; gridOffset = 0; runnerParticles = []; runnerPulse = 0; wasGrounded = true;
             requestAnimationFrame(runnerLoop);
         }
+
         function spawnRunnerParticles(x, y, color, count) {
             for (let i=0;i<count;i++) {
-                const a = Math.random()*Math.PI - Math.PI; const spd = Math.random()*3+1;
-                runnerParticles.push({ x, y, vx:Math.cos(a)*spd, vy:-Math.abs(Math.sin(a)*spd)-1, life:1, decay:0.04+Math.random()*0.03, r:Math.random()*2.5+1, color });
+                const a = Math.random()*Math.PI - Math.PI; const spd = Math.random()*4+2;
+                runnerParticles.push({ x, y, vx:Math.cos(a)*spd, vy:-Math.abs(Math.sin(a)*spd)-1, life:1, decay:0.04+Math.random()*0.03, r:Math.random()*3+1, color });
             }
         }
+
         function runnerLoop() {
             if (isGameOver || activeGame !== 'runner') return;
             runnerPulse += 0.05;
-            if ((keys['Space'] || touchState.action) && runner.isGrounded) { runner.vy = runner.jumpPower; runner.isGrounded = false; playSound('jump'); spawnRunnerParticles(runner.x, runner.y, '#fbbf24', 8); }
+            
+            if ((keys['Space'] || touchState.action) && runner.isGrounded) { 
+                runner.vy = runner.jumpPower; runner.isGrounded = false; playSound('jump'); 
+                spawnRunnerParticles(runner.x + runner.width/2, runner.y + runner.height, '#fbbf24', 12); 
+            }
+            
             runner.vy += runner.gravity; runner.y += runner.vy;
             const groundY = canvas.height - 150;
-            if (runner.y >= groundY) {
-                if (!wasGrounded) { spawnRunnerParticles(runner.x, runner.y, '#a855f7', 10); triggerShake(3); }
-                runner.y = groundY; runner.vy = 0; runner.isGrounded = true;
+            
+            if (runner.y + runner.height >= groundY) {
+                if (!wasGrounded) { spawnRunnerParticles(runner.x + runner.width/2, groundY, '#a855f7', 15); triggerShake(4); }
+                runner.y = groundY - runner.height; runner.vy = 0; runner.isGrounded = true;
             }
             wasGrounded = runner.isGrounded;
 
             ctx.save();
             applyShake(ctx);
 
-            // background gradient
             const bg = ctx.createLinearGradient(0,0,0,canvas.height);
-            bg.addColorStop(0,'#0a0420'); bg.addColorStop(1,'#060112');
+            bg.addColorStop(0,'#1a0b2e'); bg.addColorStop(0.5,'#2b0845'); bg.addColorStop(1,'#0f0518');
             ctx.fillStyle = bg; ctx.fillRect(-30,-30,canvas.width+60,canvas.height+60);
 
-            gridOffset = (gridOffset - runnerSpeed) % 80;
             ctx.save();
-            ctx.strokeStyle = `rgba(168,85,247,${0.18+0.07*Math.sin(runnerPulse*2)})`; ctx.lineWidth=2;
-            for (let x = gridOffset; x < canvas.width; x += 80) { ctx.beginPath(); ctx.moveTo(x,groundY); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+            ctx.shadowBlur = 30; ctx.shadowColor = '#f43f5e';
+            const sun = ctx.createLinearGradient(0, groundY - 200, 0, groundY);
+            sun.addColorStop(0, '#facc15'); sun.addColorStop(0.5, '#f97316'); sun.addColorStop(1, '#e11d48');
+            ctx.fillStyle = sun;
+            ctx.beginPath(); ctx.arc(canvas.width / 2, groundY, 150, Math.PI, 0); ctx.fill();
+            ctx.globalCompositeOperation = 'destination-out';
+            for(let i=0; i<10; i++) {
+                let h = 2 + i*1.5;
+                ctx.fillRect(canvas.width/2 - 160, groundY - i*18, 320, h);
+            }
             ctx.restore();
 
-            // ground line with glow
-            ctx.save(); ctx.shadowBlur=12; ctx.shadowColor='#a855f7';
-            const groundGrad = ctx.createLinearGradient(0,groundY+5,0,groundY+15);
-            groundGrad.addColorStop(0,'#e9d5ff'); groundGrad.addColorStop(1,'#a855f7');
-            ctx.strokeStyle = groundGrad; ctx.lineWidth=4;
-            ctx.beginPath(); ctx.moveTo(0,groundY+10); ctx.lineTo(canvas.width,groundY+10); ctx.stroke();
+            gridOffset = (gridOffset + runnerSpeed) % 80;
+            ctx.save();
+            ctx.strokeStyle = `rgba(34, 211, 238, ${0.4 + 0.1 * Math.sin(runnerPulse)})`; 
+            ctx.lineWidth = 2;
+            
+            for (let y = groundY; y < canvas.height; y += 40) {
+                let actualY = y + (gridOffset * (y - groundY) / 100); 
+                if(actualY < canvas.height) {
+                    ctx.beginPath(); ctx.moveTo(0, actualY); ctx.lineTo(canvas.width, actualY); ctx.stroke();
+                }
+            }
+            let vanishingPointX = canvas.width / 2;
+            for (let x = -1000; x < canvas.width + 1000; x += 100) {
+                ctx.beginPath(); ctx.moveTo(vanishingPointX, groundY); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
             ctx.restore();
 
-            // runner: gradient body + glow + motion squash on jump + visor detail
-            ctx.save(); ctx.translate(runner.x, runner.y);
-            const squash = runner.isGrounded ? 1 : 1 - Math.min(0.15, Math.abs(runner.vy)*0.004);
-            ctx.scale(1/squash, squash);
-            ctx.shadowBlur=18; ctx.shadowColor='#fbbf24';
-            const rGrad = ctx.createLinearGradient(0,-runner.height,0,0);
-            rGrad.addColorStop(0,'#fef3c7'); rGrad.addColorStop(0.5,'#fbbf24'); rGrad.addColorStop(1,'#d97706');
-            ctx.fillStyle = rGrad;
-            ctx.beginPath(); ctx.roundRect(-runner.width/2,-runner.height,runner.width,runner.height, 6); ctx.fill();
-            // visor/eye detail
-            ctx.shadowBlur=0;
-            ctx.fillStyle = 'rgba(15,23,42,0.85)';
-            ctx.beginPath(); ctx.roundRect(-runner.width/2+8,-runner.height+12,runner.width-16,12,4); ctx.fill();
-            ctx.fillStyle = 'rgba(96,165,250,0.9)';
-            ctx.beginPath(); ctx.roundRect(-runner.width/2+11,-runner.height+15,runner.width-22,6,2); ctx.fill();
+            ctx.save();
+            ctx.shadowBlur = 20; ctx.shadowColor = '#22d3ee';
+            ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY); ctx.stroke();
             ctx.restore();
 
             obstacleTimer++;
-            if (obstacleTimer > 70) { obstacles.push({ x:canvas.width+50, y:groundY+10, width:40, height:Math.random()*40+40 }); obstacleTimer=0; if (runnerSpeed<18) runnerSpeed+=0.2; }
+            if (obstacleTimer > 70) { 
+                obstacles.push({ x: canvas.width + 50, y: groundY, width: 40, height: Math.random() * 50 + 50, depth: 30 }); 
+                obstacleTimer = 0; 
+                if (runnerSpeed < 18) runnerSpeed += 0.2; 
+            }
 
             obstacles.forEach((o, idx) => {
                 o.x -= runnerSpeed;
-                ctx.save(); ctx.shadowBlur=16; ctx.shadowColor='#ec4899';
-                const oGrad = ctx.createLinearGradient(o.x-o.width/2,o.y-o.height,o.x-o.width/2,o.y);
-                oGrad.addColorStop(0,'#fbcfe8'); oGrad.addColorStop(0.5,'#ec4899'); oGrad.addColorStop(1,'#9d174d');
-                ctx.fillStyle = oGrad;
-                ctx.fillRect(o.x-o.width/2, o.y-o.height, o.width, o.height);
-                ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1.5;
-                ctx.strokeRect(o.x-o.width/2, o.y-o.height, o.width, o.height);
-                // warning stripes detail
-                ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=3;
-                for (let sy=o.y-o.height+8; sy<o.y-4; sy+=10) { ctx.beginPath(); ctx.moveTo(o.x-o.width/2+3,sy); ctx.lineTo(o.x-o.width/2+o.width-3,sy-6); ctx.stroke(); }
-                ctx.restore();
-                const rx=runner.x-runner.width/2, ry=runner.y-runner.height, ox=o.x-o.width/2, oy=o.y-o.height;
-                if (rx<ox+o.width && rx+runner.width>ox && ry<oy+o.height && ry+runner.height>oy) { triggerShake(8); setGameOver(); }
-                if (o.x < runner.x && !o.passed) {
-                    o.passed=true; score+=5; gameScoreText.innerText=score;
-                    registerCombo(ctx, runner.x, runner.y-80, 5);
+                draw3DBox(ctx, o.x, o.y - o.height, o.width, o.height, o.depth, '#be185d', '#f43f5e', '#831843', '#ec4899');
+                
+                const rx = runner.x, ry = runner.y, rw = runner.width, rh = runner.height;
+                const ox = o.x, oy = o.y - o.height, ow = o.width, oh = o.height;
+                
+                if (rx < ox + ow && rx + rw > ox && ry < oy + oh && ry + rh > oy) { 
+                    triggerShake(10); setGameOver(); 
                 }
-                if (o.x < -100) obstacles.splice(idx,1);
+                if (ox + ow < rx && !o.passed) {
+                    o.passed = true; score += 5; gameScoreText.innerText = score;
+                    registerCombo(ctx, runner.x, runner.y - 60, 5);
+                }
+                if (o.x < -100) obstacles.splice(idx, 1);
             });
 
-            // particles
-            for (let i=runnerParticles.length-1;i>=0;i--) {
+            const squash = runner.isGrounded ? 1 : 1 - Math.min(0.15, Math.abs(runner.vy) * 0.004);
+            ctx.save();
+            ctx.translate(runner.x + runner.width/2, runner.y + runner.height);
+            ctx.scale(1/squash, squash);
+            ctx.translate(-(runner.x + runner.width/2), -(runner.y + runner.height));
+            
+            draw3DBox(ctx, runner.x, runner.y, runner.width, runner.height, runner.depth, '#d97706', '#fde047', '#b45309', '#fbbf24');
+            
+            ctx.fillStyle = 'rgba(15,23,42,0.9)';
+            ctx.fillRect(runner.x + 8, runner.y + 10, runner.width - 12, 10);
+            ctx.fillStyle = '#60a5fa'; ctx.shadowBlur = 10; ctx.shadowColor = '#60a5fa';
+            ctx.fillRect(runner.x + 10, runner.y + 12, runner.width - 16, 6);
+            ctx.restore();
+
+            for (let i = runnerParticles.length - 1; i >= 0; i--) {
                 const p = runnerParticles[i];
-                p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=p.decay;
-                if (p.life<=0) { runnerParticles.splice(i,1); continue; }
-                ctx.save(); ctx.globalAlpha=Math.max(0,p.life); ctx.shadowBlur=6; ctx.shadowColor=p.color; ctx.fillStyle=p.color;
-                ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); ctx.fill(); ctx.restore();
+                p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= p.decay;
+                if (p.life <= 0) { runnerParticles.splice(i, 1); continue; }
+                ctx.save(); ctx.globalAlpha = Math.max(0, p.life); ctx.shadowBlur = 8; ctx.shadowColor = p.color; ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2); ctx.fill(); ctx.restore();
             }
+
+            updateAndDrawCombo(ctx);
+            ctx.restore();
 
             requestAnimationFrame(runnerLoop);
         }
 
-        // RETRO BREAKER (enhanced visuals)
+        // ===== RETRO BREAKER (3D BLOCKS EDITION) =====
         let paddle, ball, bricks, breakerParticles, ballTrail;
         function initBreakerGame() {
             shakeAmount = 0; resetCombo(); comboFlashText = null;
@@ -748,36 +781,18 @@
                 bricks.forEach((b,idx) => { if (ball.x+ball.r>b.x && ball.x-ball.r<b.x+b.width && ball.y+ball.r>b.y && ball.y-ball.r<b.y+b.height) { ball.vy*=-1; playSound('explosion'); spawnBreakerParticles(b.x+b.width/2, b.y+b.height/2, b.color, 16); bricks.splice(idx,1); score+=20; gameScoreText.innerText=score; } });
             }
 
-            // background gradient
             const bg = ctx.createLinearGradient(0,0,0,canvas.height);
             bg.addColorStop(0,'#0c1224'); bg.addColorStop(1,'#020617');
             ctx.fillStyle = bg; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            // paddle: gradient + glow
-            ctx.save(); ctx.shadowBlur=16; ctx.shadowColor='#10b981';
-            const pGrad = ctx.createLinearGradient(paddle.x-paddle.width/2,0,paddle.x+paddle.width/2,0);
-            pGrad.addColorStop(0,'#6ee7b7'); pGrad.addColorStop(0.5,'#10b981'); pGrad.addColorStop(1,'#047857');
-            ctx.fillStyle = pGrad;
-            ctx.beginPath(); ctx.roundRect(paddle.x-paddle.width/2, paddle.y-paddle.height/2, paddle.width, paddle.height, 6); ctx.fill();
-            ctx.restore();
+            // Vẽ Paddle 3D
+            draw3DBox(ctx, paddle.x-paddle.width/2, paddle.y-paddle.height/2, paddle.width, paddle.height, 6, '#10b981', '#6ee7b7', '#047857', '#10b981');
 
-            // bricks: gradient + 3D bevel highlight/shadow
+            // Vẽ Bricks 3D
             bricks.forEach(b => {
-                ctx.save();
-                const bGrad = ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.height);
-                bGrad.addColorStop(0, shadeColor(b.color, 40));
-                bGrad.addColorStop(1, shadeColor(b.color, -30));
-                ctx.fillStyle = bGrad;
-                ctx.fillRect(b.x, b.y, b.width, b.height);
-                // top highlight bevel
-                ctx.fillStyle = 'rgba(255,255,255,0.25)';
-                ctx.fillRect(b.x, b.y, b.width, 3);
-                ctx.fillStyle = 'rgba(0,0,0,0.25)';
-                ctx.fillRect(b.x, b.y+b.height-3, b.width, 3);
-                ctx.restore();
+                draw3DBox(ctx, b.x, b.y, b.width, b.height, 8, b.color, shadeColor(b.color, 40), shadeColor(b.color, -30), b.color);
             });
 
-            // ball trail (fading glow)
             ballTrail.forEach((t, i) => {
                 ctx.save();
                 ctx.globalAlpha = (i / ballTrail.length) * 0.4;
@@ -786,7 +801,6 @@
                 ctx.restore();
             });
 
-            // ball: gradient + glow
             ctx.save(); ctx.shadowBlur=14; ctx.shadowColor='#ffffff';
             const ballGrad = ctx.createRadialGradient(ball.x-3,ball.y-3,1,ball.x,ball.y,ball.r);
             ballGrad.addColorStop(0,'#ffffff'); ballGrad.addColorStop(1,'#cbd5e1');
@@ -794,7 +808,6 @@
             ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
             ctx.restore();
 
-            // particles
             for (let i=breakerParticles.length-1;i>=0;i--) {
                 const p = breakerParticles[i];
                 p.x+=p.vx; p.y+=p.vy; p.vx*=0.96; p.vy*=0.96; p.life-=p.decay;
@@ -897,12 +910,10 @@
                 if (reactorSpeed < 9) reactorSpeed += 0.04;
             }
 
-            // ---- BACKGROUND: deep gradient + hex grid ----
             const bgGrad = ctx.createLinearGradient(0,0,0,canvas.height);
             bgGrad.addColorStop(0, '#0d0d1a'); bgGrad.addColorStop(1, '#05050a');
             ctx.fillStyle = bgGrad; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            // subtle hex pattern
             ctx.save();
             ctx.strokeStyle = 'rgba(255,255,255,0.025)'; ctx.lineWidth = 1;
             const hexSize = 38;
@@ -921,7 +932,6 @@
             }
             ctx.restore();
 
-            // heat vignette (red glow intensifies at edges as heat rises)
             if (reactorHeat > 15) {
                 const vign = ctx.createRadialGradient(canvas.width/2,canvas.height/2,canvas.height*0.3,canvas.width/2,canvas.height/2,canvas.height*0.75);
                 const intensity = Math.min(0.55, reactorHeat/100*0.55);
@@ -929,7 +939,6 @@
                 ctx.fillStyle = vign; ctx.fillRect(0,0,canvas.width,canvas.height);
             }
 
-            // ---- CHANNELS with gradient fill + flash ----
             reactorChannels.forEach((ch, ci) => {
                 ctx.save();
                 const grad = ctx.createLinearGradient(ch.x,0,ch.x+ch.w,0);
@@ -942,14 +951,12 @@
                 ctx.restore();
                 if (ch.flash > 0) ch.flash--;
 
-                // divider line with subtle glow
                 ctx.save();
                 ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.moveTo(ch.x, 0); ctx.lineTo(ch.x, canvas.height); ctx.stroke();
                 ctx.restore();
             });
 
-            // ---- ACTIVATION ZONE: glowing energy ring band ----
             const zoneY = canvas.height - 90;
             ctx.save();
             const zoneGlow = ctx.createLinearGradient(0, zoneY-18, 0, zoneY+18);
@@ -962,7 +969,6 @@
             ctx.beginPath(); ctx.moveTo(0, zoneY); ctx.lineTo(canvas.width, zoneY); ctx.stroke();
             ctx.restore();
 
-            // ---- NODES: layered gradient orb + rotating energy ring + core highlight ----
             reactorNodes.forEach((n, idx) => {
                 n.y += n.speed;
                 n.spin += 0.05;
@@ -972,7 +978,6 @@
                 ctx.save();
                 ctx.translate(n.x, n.y);
 
-                // outer glow halo
                 ctx.shadowBlur = 26; ctx.shadowColor = colorDef.glow;
                 const orbGrad = ctx.createRadialGradient(-pulseR*0.3,-pulseR*0.3,2, 0,0,pulseR);
                 orbGrad.addColorStop(0, colorDef.core);
@@ -981,7 +986,6 @@
                 ctx.fillStyle = orbGrad;
                 ctx.beginPath(); ctx.arc(0,0,pulseR,0,Math.PI*2); ctx.fill();
 
-                // rotating energy ring around orb
                 ctx.shadowBlur = 0;
                 ctx.rotate(n.spin);
                 ctx.strokeStyle = `${colorDef.core}cc`; ctx.lineWidth = 2;
@@ -989,7 +993,6 @@
                 ctx.beginPath(); ctx.arc(0,0,pulseR+6,0,Math.PI*1.5); ctx.stroke();
                 ctx.setLineDash([]);
 
-                // small specular highlight
                 ctx.fillStyle = 'rgba(255,255,255,0.7)';
                 ctx.beginPath(); ctx.arc(-pulseR*0.32,-pulseR*0.32, pulseR*0.22, 0, Math.PI*2); ctx.fill();
 
@@ -1001,7 +1004,6 @@
                 }
             });
 
-            // ---- PARTICLES (explosion sparks on tap) ----
             for (let i = reactorParticles.length - 1; i >= 0; i--) {
                 const p = reactorParticles[i];
                 p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life -= p.decay;
@@ -1014,7 +1016,6 @@
                 ctx.restore();
             }
 
-            // ---- TAP labels with channel-colored glow ----
             reactorChannels.forEach(ch => {
                 ctx.save();
                 ctx.font = 'bold 13px monospace';
@@ -1051,7 +1052,6 @@
             requestAnimationFrame(coinLoop);
         }
 
-        // background stars for star harvest
         const bgStars = Array.from({length:120}, () => ({
             x: Math.random()*1280, y: Math.random()*720,
             r: Math.random()*1.2+0.2, twinkle: Math.random()*Math.PI*2
@@ -1060,11 +1060,9 @@
         function coinLoop() {
             if (isGameOver || activeGame !== 'coin') { if (starHud) starHud.style.display = 'none'; return; }
 
-            // move ship
             if (keys['ArrowLeft'] || touchState.left) starShip.x = Math.max(starShip.width/2, starShip.x - starShip.speed);
             if (keys['ArrowRight'] || touchState.right) starShip.x = Math.min(canvas.width - starShip.width/2, starShip.x + starShip.speed);
 
-            // spawn items
             starSpawnTimer++;
             if (starSpawnTimer > Math.max(16, 36 - Math.floor(score/80))) {
                 starSpawnTimer = 0;
@@ -1082,16 +1080,12 @@
                 if (starSpeed < 12) starSpeed += 0.04;
             }
 
-            // ---- DRAW ----
-            // deep space background
             ctx.fillStyle = '#020817'; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            // nebula glow (subtle)
             const nebula = ctx.createRadialGradient(640,300,100,640,300,500);
             nebula.addColorStop(0,'rgba(99,102,241,0.06)'); nebula.addColorStop(1,'rgba(0,0,0,0)');
             ctx.fillStyle = nebula; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            // twinkling bg stars
             bgStars.forEach(s => {
                 s.twinkle += 0.04;
                 const a = 0.4 + 0.35*Math.sin(s.twinkle);
@@ -1099,27 +1093,20 @@
                 ctx.fillStyle = `rgba(255,255,255,${a})`; ctx.fill();
             });
 
-            // draw spaceship (triangle hull + wings + engine glow)
             const sx = starShip.x, sy = canvas.height - 80;
             ctx.save();
             ctx.shadowBlur = 20; ctx.shadowColor = '#6366f1';
-            // engine glow
             const eng = ctx.createRadialGradient(sx, sy+30, 2, sx, sy+30, 18);
             eng.addColorStop(0,'rgba(129,140,248,0.9)'); eng.addColorStop(1,'rgba(0,0,0,0)');
             ctx.fillStyle = eng; ctx.fillRect(sx-18, sy+14, 36, 36);
-            // left wing
             ctx.fillStyle='#4338ca';
             ctx.beginPath(); ctx.moveTo(sx-20,sy+10); ctx.lineTo(sx-55,sy+28); ctx.lineTo(sx-20,sy+28); ctx.closePath(); ctx.fill();
-            // right wing
             ctx.beginPath(); ctx.moveTo(sx+20,sy+10); ctx.lineTo(sx+55,sy+28); ctx.lineTo(sx+20,sy+28); ctx.closePath(); ctx.fill();
-            // main hull
             ctx.fillStyle='#818cf8';
             ctx.beginPath(); ctx.moveTo(sx, sy-20); ctx.lineTo(sx+20,sy+28); ctx.lineTo(sx-20,sy+28); ctx.closePath(); ctx.fill();
-            // cockpit
             ctx.fillStyle='#e0e7ff'; ctx.beginPath(); ctx.ellipse(sx, sy+4, 7, 10, 0, 0, Math.PI*2); ctx.fill();
             ctx.restore();
 
-            // draw falling items
             starItems.forEach((item, idx) => {
                 item.y += item.speed;
                 item.angle += item.spin;
@@ -1128,7 +1115,6 @@
                 ctx.rotate(item.angle);
 
                 if (item.type === 'star') {
-                    // 5-pointed star shape
                     ctx.shadowBlur=16; ctx.shadowColor='#fde047';
                     ctx.fillStyle='#fef08a';
                     ctx.beginPath();
@@ -1140,7 +1126,6 @@
                     }
                     ctx.closePath(); ctx.fill();
                 } else if (item.type === 'solar') {
-                    // sun orb with rays
                     ctx.shadowBlur=24; ctx.shadowColor='#f97316';
                     const sol = ctx.createRadialGradient(0,0,2,0,0,item.r);
                     sol.addColorStop(0,'#fff7ed'); sol.addColorStop(0.5,'#fb923c'); sol.addColorStop(1,'#ea580c');
@@ -1153,7 +1138,6 @@
                         ctx.lineTo(Math.cos(a)*(item.r+10), Math.sin(a)*(item.r+10)); ctx.stroke();
                     }
                 } else {
-                    // dark asteroid (jagged rock)
                     ctx.shadowBlur=10; ctx.shadowColor='#7f1d1d';
                     ctx.fillStyle='#292524';
                     ctx.beginPath();
@@ -1163,13 +1147,11 @@
                     }
                     ctx.closePath(); ctx.fill();
                     ctx.strokeStyle='#57534e'; ctx.lineWidth=1.5; ctx.stroke();
-                    // crack detail
                     ctx.strokeStyle='rgba(87,83,78,0.6)'; ctx.lineWidth=1;
                     ctx.beginPath(); ctx.moveTo(-5,-4); ctx.lineTo(3,6); ctx.lineTo(7,1); ctx.stroke();
                 }
                 ctx.restore();
 
-                // catch detection
                 const catchY = canvas.height - 65;
                 const caught = item.y+item.r > catchY-8 && item.y-item.r < catchY+22
                              && item.x > starShip.x-starShip.width/2 && item.x < starShip.x+starShip.width/2;
@@ -1279,9 +1261,6 @@
             }
         };
 
-        // Xác định ngôn ngữ ban đầu:
-        // 1. Nếu khách đã từng tự chọn (lưu trong localStorage) -> dùng lựa chọn đó
-        // 2. Nếu chưa từng chọn -> tự nhận diện ngôn ngữ trình duyệt, không phải tiếng Việt thì set EN
         function detectInitialLang() {
             const saved = localStorage.getItem('gamhub_lang');
             if (saved) return saved;
@@ -1304,7 +1283,6 @@
             });
             document.getElementById('langLabel').textContent = currentLang === 'vi' ? 'VN' : 'EN';
             document.documentElement.lang = currentLang;
-            // Render lại comment list và game grid theo ngôn ngữ mới (nếu đã load)
             if (window.renderComments) window.renderComments();
             if (window.renderGames) window.renderGames();
         }
@@ -1379,7 +1357,6 @@
             sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane text-xs"></i> ' + i18n[currentLang].sendAnon;
         });
 
-        // Lưu lại danh sách comment để render lại khi đổi ngôn ngữ
         let cachedComments = [];
         window.renderComments = function() {
             if (cachedComments.length === 0) {
@@ -1416,8 +1393,6 @@
             cyan:    { border:'border-cyan-500/50',   icon:'text-cyan-500/80',   btn:'bg-cyan-600 hover:bg-cyan-500',     title:'group-hover:text-cyan-400'   },
         };
 
-        // Lưu lại danh sách game để render lại khi đổi ngôn ngữ.
-        // Nếu admin đã thêm field nameEn/descriptionEn vào Firestore, sẽ tự ưu tiên dùng khi ở chế độ EN.
         let cachedGames = [];
         window.renderGames = function() {
             dynamicGameGrid.innerHTML = '';

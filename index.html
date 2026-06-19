@@ -220,22 +220,44 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-yellow-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-indigo-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
-                            <i class="fa-solid fa-coins text-5xl text-yellow-500/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
+                            <i class="fa-solid fa-meteor text-5xl text-indigo-400/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
                             <div class="absolute top-6 left-12 w-3 h-3 rounded-full bg-yellow-400 opacity-50 animate-bounce"></div>
                             <div class="absolute top-12 right-16 w-2.5 h-2.5 rounded-full bg-cyan-400 opacity-40 animate-bounce" style="animation-delay:.3s"></div>
                             <div class="absolute bottom-10 left-24 w-2 h-2 rounded-full bg-red-500 opacity-40 animate-pulse"></div>
                         </div>
                         <div class="p-5 space-y-2">
-                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-yellow-400 transition" data-i18n="coinCatcherTitle">Coin Catcher</h4>
-                            <p class="text-xs text-slate-400 leading-relaxed" data-i18n="coinCatcherDesc">Hứng xu vàng và kim cương rơi xuống, tránh xa những quả bom nguy hiểm. Mất 3 mạng là thua!</p>
+                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-indigo-400 transition" data-i18n="coinCatcherTitle">Star Harvest</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed" data-i18n="coinCatcherDesc">Lái tàu vũ trụ hứng tinh tú và năng lượng mặt trời, tránh đá tối nguy hiểm. Mất 3 mạng là thua!</p>
                         </div>
                     </div>
                     <div class="p-5 pt-0">
-                        <button onclick="fxRipple(event); startGame('coin')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <button onclick="fxRipple(event); startGame('coin')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-play text-xs"></i> <span data-i18n="playNow">Chơi ngay</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-red-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <i class="fa-solid fa-atom text-5xl text-red-400/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
+                            <div class="absolute top-6 left-10 w-3 h-3 rounded-full bg-red-500 opacity-50 animate-pulse"></div>
+                            <div class="absolute top-10 right-12 w-2.5 h-2.5 rounded-full bg-blue-400 opacity-40 animate-bounce"></div>
+                            <div class="absolute bottom-12 left-20 w-2 h-2 rounded-full bg-yellow-400 opacity-40 animate-pulse" style="animation-delay:.2s"></div>
+                            <div class="absolute bottom-8 right-20 w-2 h-2 rounded-full bg-purple-400 opacity-40 animate-bounce" style="animation-delay:.4s"></div>
+                        </div>
+                        <div class="p-5 space-y-2">
+                            <h4 class="text-base font-bold font-orbitron text-slate-100 group-hover:text-red-400 transition" data-i18n="reactorTitle">Reactor Overload</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed" data-i18n="reactorDesc">Chạm đúng kênh màu để hạ nhiệt lò phản ứng trước khi nó quá tải và nổ tung!</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0">
+                        <button onclick="fxRipple(event); startGame('reactor')" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition active:scale-95">
                             <i class="fa-solid fa-play text-xs"></i> <span data-i18n="playNow">Chơi ngay</span>
                         </button>
                     </div>
@@ -358,7 +380,7 @@
         }
 
         let activeGame = null, score = 0, isGameOver = false, keys = {};
-        let highScores = { space: 0, runner: 0, breaker: 0, coin: 0 };
+        let highScores = { space: 0, runner: 0, breaker: 0, coin: 0, reactor: 0 };
         window.addEventListener('keydown', e => { keys[e.code] = true; });
         window.addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -405,11 +427,12 @@
             document.body.style.overflow = "hidden";
             document.getElementById('canvasWrapper').style.display = 'flex';
             gameIframe.style.display = 'none';
-            mobileControls.classList.remove('hidden');
+            mobileControls.classList.toggle('hidden', gameKey === 'reactor');
             if (gameKey === 'space') { cabinetGameTitle.innerText = "🌌 " + (i18n[currentLang].spaceStormTitle || "SPACE STORM").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionShoot; initSpaceGame(); }
             else if (gameKey === 'runner') { cabinetGameTitle.innerText = "🏃 " + (i18n[currentLang].cyberRunnerTitle || "CYBER RUNNER").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionJump; initRunnerGame(); }
             else if (gameKey === 'breaker') { cabinetGameTitle.innerText = "🧱 " + (i18n[currentLang].retroBreakerTitle || "RETRO BREAKER").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionHit; initBreakerGame(); }
-            else if (gameKey === 'coin') { cabinetGameTitle.innerText = "🪙 " + (i18n[currentLang].coinCatcherTitle || "COIN CATCHER").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionCatch; initCoinGame(); }
+            else if (gameKey === 'coin') { cabinetGameTitle.innerText = "⭐ " + (i18n[currentLang].coinCatcherTitle || "STAR HARVEST").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionCatch; initCoinGame(); }
+            else if (gameKey === 'reactor') { cabinetGameTitle.innerText = "⚛️ " + (i18n[currentLang].reactorTitle || "REACTOR OVERLOAD").toUpperCase(); btnAction.querySelector('span').innerText = i18n[currentLang].actionTap; initReactorGame(); }
         }
 
         function closeCabinet() { gameCabinet.style.display = 'none'; isGameOver = true; activeGame = null; gameIframe.style.display = 'none'; gameIframe.src = "about:blank"; document.body.style.overflow = "auto"; }
@@ -422,80 +445,291 @@
         }
         function setGameOver() { isGameOver = true; gameOverOverlay.classList.remove('hidden'); playSound('explosion'); if (score > highScores[activeGame]) { highScores[activeGame] = score; gameHighScoreText.innerText = score; } }
 
-        // SPACE STORM
-        let player, playerLasers, enemies, spaceStars, lastLaserTime = 0;
+        // ===== SHARED FX: screen shake + combo/streak system =====
+        let shakeAmount = 0, shakeDecay = 0.85;
+        function triggerShake(amount) { shakeAmount = Math.max(shakeAmount, amount); }
+        function applyShake(ctx) {
+            if (shakeAmount > 0.3) {
+                const dx = (Math.random()-0.5) * shakeAmount;
+                const dy = (Math.random()-0.5) * shakeAmount;
+                ctx.translate(dx, dy);
+                shakeAmount *= shakeDecay;
+            } else shakeAmount = 0;
+        }
+        let comboCount = 0, comboTimer = 0, comboFlashText = null;
+        function registerCombo(ctx, x, y, points) {
+            comboTimer = 50;
+            comboCount++;
+            comboFlashText = { x, y, text: comboCount >= 3 ? `COMBO x${comboCount}!` : `+${points}`, life: 1, big: comboCount >= 3 };
+        }
+        function resetCombo() { comboCount = 0; comboTimer = 0; }
+        function updateAndDrawCombo(ctx) {
+            if (comboTimer > 0) comboTimer--; else comboCount = 0;
+            if (comboFlashText) {
+                const f = comboFlashText;
+                f.y -= 1.2; f.life -= 0.02;
+                if (f.life <= 0) { comboFlashText = null; return; }
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, f.life);
+                ctx.textAlign = 'center';
+                if (f.big) {
+                    ctx.font = 'bold 28px Orbitron, sans-serif';
+                    ctx.shadowBlur = 14; ctx.shadowColor = '#facc15';
+                    ctx.fillStyle = '#fde047';
+                } else {
+                    ctx.font = 'bold 18px Orbitron, sans-serif';
+                    ctx.shadowBlur = 8; ctx.shadowColor = '#ffffff';
+                    ctx.fillStyle = '#ffffff';
+                }
+                ctx.fillText(f.text, f.x, f.y);
+                ctx.restore();
+            }
+        }
+
+        // SPACE STORM (enhanced visuals)
+        let player, playerLasers, enemies, spaceStars, lastLaserTime = 0, spaceParticles, spacePulse;
         function initSpaceGame() {
+            shakeAmount = 0; resetCombo(); comboFlashText = null;
             player = { x: canvas.width/2, y: canvas.height-100, width: 60, height: 50, speed: 10 };
-            playerLasers = []; enemies = []; spaceStars = [];
-            for (let i = 0; i < 50; i++) spaceStars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2+1, speed: Math.random()*2+0.5 });
+            playerLasers = []; enemies = []; spaceStars = []; spaceParticles = []; spacePulse = 0;
+            for (let i = 0; i < 70; i++) spaceStars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2+0.5, speed: Math.random()*2.5+0.3, layer: Math.random()>0.7?2:1 });
             lastLaserTime = 0; requestAnimationFrame(spaceLoop);
+        }
+        function spawnSpaceParticles(x, y, color, count) {
+            for (let i=0;i<count;i++) {
+                const a = Math.random()*Math.PI*2, spd = Math.random()*4+2;
+                spaceParticles.push({ x, y, vx:Math.cos(a)*spd, vy:Math.sin(a)*spd, life:1, decay:0.025+Math.random()*0.025, r:Math.random()*3+1.5, color });
+            }
         }
         function spaceLoop() {
             if (isGameOver || activeGame !== 'space') return;
+            spacePulse += 0.08;
             if (keys['ArrowLeft'] || touchState.left) player.x = Math.max(player.width, player.x - player.speed);
             if (keys['ArrowRight'] || touchState.right) player.x = Math.min(canvas.width - player.width, player.x + player.speed);
             if (keys['Space'] || touchState.action) { const now = performance.now(); if (now - lastLaserTime > 180) { playerLasers.push({ x: player.x, y: player.y-30, speed: 14 }); playSound('laser'); lastLaserTime = now; } }
-            ctx.fillStyle = '#02020a'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = '#ffffff';
-            spaceStars.forEach(s => { s.y += s.speed; if (s.y > canvas.height) s.y = 0; ctx.fillRect(s.x, s.y, s.size, s.size); });
-            ctx.save(); ctx.translate(player.x, player.y); ctx.shadowBlur=15; ctx.shadowColor='#3b82f6'; ctx.fillStyle='#3b82f6'; ctx.beginPath(); ctx.moveTo(0,-25); ctx.lineTo(-30,25); ctx.lineTo(-10,15); ctx.lineTo(10,15); ctx.lineTo(30,25); ctx.closePath(); ctx.fill(); ctx.restore();
-            if (Math.random() < 0.03) enemies.push({ x: Math.random()*(canvas.width-80)+40, y: -40, width: 45, height: 40, speed: Math.random()*3+3 });
-            ctx.fillStyle = '#60a5fa';
-            playerLasers.forEach((l, idx) => { l.y -= l.speed; ctx.shadowBlur=10; ctx.shadowColor='#60a5fa'; ctx.fillRect(l.x-3, l.y, 6, 20); if (l.y < -30) playerLasers.splice(idx,1); });
-            ctx.shadowBlur = 0;
+
+            ctx.save();
+            applyShake(ctx);
+
+            // background: deep gradient + nebula glow
+            const bg = ctx.createRadialGradient(canvas.width/2, canvas.height*0.3, 50, canvas.width/2, canvas.height*0.3, canvas.height);
+            bg.addColorStop(0, '#0a0a2e'); bg.addColorStop(1, '#02020a');
+            ctx.fillStyle = bg; ctx.fillRect(-50,-50,canvas.width+100,canvas.height+100);
+
+            // parallax stars (2 layers, far stars twinkle)
+            spaceStars.forEach(s => {
+                s.y += s.speed;
+                if (s.y > canvas.height) s.y = 0;
+                ctx.save();
+                ctx.globalAlpha = s.layer===2 ? (0.5+0.4*Math.sin(spacePulse+s.x)) : 0.6;
+                ctx.fillStyle = s.layer===2 ? '#93c5fd' : '#ffffff';
+                ctx.shadowBlur = s.layer===2 ? 4 : 0; ctx.shadowColor = '#93c5fd';
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            });
+
+            // player ship: gradient hull + engine flame + wing glow + side fins
+            ctx.save(); ctx.translate(player.x, player.y);
+            const engineFlicker = 8 + Math.sin(spacePulse*4)*3;
+            const flame = ctx.createRadialGradient(0,30,1,0,30,engineFlicker);
+            flame.addColorStop(0,'rgba(96,165,250,0.95)'); flame.addColorStop(0.5,'rgba(59,130,246,0.5)'); flame.addColorStop(1,'rgba(59,130,246,0)');
+            ctx.fillStyle = flame; ctx.beginPath(); ctx.arc(0,28,engineFlicker,0,Math.PI*2); ctx.fill();
+            ctx.shadowBlur=18; ctx.shadowColor='#3b82f6';
+            // side fins (detail)
+            const finGrad = ctx.createLinearGradient(0,0,0,20);
+            finGrad.addColorStop(0,'#60a5fa'); finGrad.addColorStop(1,'#1e3a8a');
+            ctx.fillStyle = finGrad;
+            ctx.beginPath(); ctx.moveTo(-10,15); ctx.lineTo(-38,20); ctx.lineTo(-22,28); ctx.closePath(); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(10,15); ctx.lineTo(38,20); ctx.lineTo(22,28); ctx.closePath(); ctx.fill();
+            const hullGrad = ctx.createLinearGradient(0,-25,0,25);
+            hullGrad.addColorStop(0,'#93c5fd'); hullGrad.addColorStop(0.5,'#3b82f6'); hullGrad.addColorStop(1,'#1e40af');
+            ctx.fillStyle = hullGrad;
+            ctx.beginPath(); ctx.moveTo(0,-25); ctx.lineTo(-30,25); ctx.lineTo(-10,15); ctx.lineTo(10,15); ctx.lineTo(30,25); ctx.closePath(); ctx.fill();
+            ctx.shadowBlur=0; ctx.fillStyle='rgba(224,242,254,0.85)';
+            ctx.beginPath(); ctx.ellipse(0,-5,6,9,0,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+
+            if (Math.random() < 0.03) enemies.push({ x: Math.random()*(canvas.width-80)+40, y: -40, width: 45, height: 40, speed: Math.random()*3+3, rot: Math.random()*Math.PI*2, spin:(Math.random()-0.5)*0.06 });
+
+            // lasers with glow trail
+            playerLasers.forEach((l, idx) => {
+                l.y -= l.speed;
+                ctx.save(); ctx.shadowBlur=14; ctx.shadowColor='#60a5fa';
+                const lg = ctx.createLinearGradient(l.x,l.y,l.x,l.y+22);
+                lg.addColorStop(0,'rgba(96,165,250,0)'); lg.addColorStop(1,'#bfdbfe');
+                ctx.fillStyle = lg; ctx.fillRect(l.x-3, l.y, 6, 22);
+                ctx.restore();
+                if (l.y < -30) playerLasers.splice(idx,1);
+            });
+
+            // enemies: gradient + slow rotation + side spikes (more detail)
             enemies.forEach((e, eIdx) => {
-                e.y += e.speed;
-                ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.moveTo(e.x,e.y-20); ctx.lineTo(e.x-22,e.y); ctx.lineTo(e.x,e.y+20); ctx.lineTo(e.x+22,e.y); ctx.closePath(); ctx.fill();
+                e.y += e.speed; e.rot += e.spin;
+                ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.rot);
+                ctx.shadowBlur=14; ctx.shadowColor='#ef4444';
+                const eg = ctx.createLinearGradient(0,-20,0,20);
+                eg.addColorStop(0,'#fca5a5'); eg.addColorStop(0.5,'#ef4444'); eg.addColorStop(1,'#991b1b');
+                ctx.fillStyle = eg;
+                ctx.beginPath(); ctx.moveTo(0,-20); ctx.lineTo(-22,0); ctx.lineTo(0,20); ctx.lineTo(22,0); ctx.closePath(); ctx.fill();
+                // inner core detail
+                ctx.shadowBlur=0; ctx.fillStyle='rgba(0,0,0,0.3)';
+                ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.fill();
+                ctx.fillStyle='rgba(255,255,255,0.5)';
+                ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+                ctx.restore();
                 if (Math.hypot(player.x-e.x, player.y-e.y) < 40) setGameOver();
-                playerLasers.forEach((l, lIdx) => { if (Math.hypot(l.x-e.x, l.y-e.y) < 30) { playSound('explosion'); enemies.splice(eIdx,1); playerLasers.splice(lIdx,1); score+=10; gameScoreText.innerText=score; } });
+                playerLasers.forEach((l, lIdx) => {
+                    if (Math.hypot(l.x-e.x, l.y-e.y) < 30) {
+                        playSound('explosion'); spawnSpaceParticles(e.x, e.y, '#fca5a5', 16);
+                        triggerShake(6);
+                        registerCombo(ctx, e.x, e.y, 10);
+                        enemies.splice(eIdx,1); playerLasers.splice(lIdx,1); score+=10; gameScoreText.innerText=score;
+                    }
+                });
                 if (e.y > canvas.height+40) enemies.splice(eIdx,1);
             });
+
+            // particles
+            for (let i = spaceParticles.length-1; i>=0; i--) {
+                const p = spaceParticles[i];
+                p.x+=p.vx; p.y+=p.vy; p.vx*=0.95; p.vy*=0.95; p.life-=p.decay;
+                if (p.life<=0) { spaceParticles.splice(i,1); continue; }
+                ctx.save(); ctx.globalAlpha=Math.max(0,p.life); ctx.shadowBlur=8; ctx.shadowColor=p.color; ctx.fillStyle=p.color;
+                ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); ctx.fill(); ctx.restore();
+            }
+
+            updateAndDrawCombo(ctx);
+            ctx.restore();
+
             requestAnimationFrame(spaceLoop);
         }
 
-        // CYBER RUNNER
-        let runner, obstacles, runnerSpeed, obstacleTimer, gridOffset;
+        // CYBER RUNNER (enhanced visuals)
+        let runner, obstacles, runnerSpeed, obstacleTimer, gridOffset, runnerParticles, runnerPulse, wasGrounded;
         function initRunnerGame() {
+            shakeAmount = 0; resetCombo(); comboFlashText = null;
             runner = { x:150, y:canvas.height-150, width:45, height:60, vy:0, gravity:1.8, isGrounded:true, jumpPower:-30 };
-            obstacles = []; runnerSpeed = 9; obstacleTimer = 0; gridOffset = 0;
+            obstacles = []; runnerSpeed = 9; obstacleTimer = 0; gridOffset = 0; runnerParticles = []; runnerPulse = 0; wasGrounded = true;
             requestAnimationFrame(runnerLoop);
+        }
+        function spawnRunnerParticles(x, y, color, count) {
+            for (let i=0;i<count;i++) {
+                const a = Math.random()*Math.PI - Math.PI; const spd = Math.random()*3+1;
+                runnerParticles.push({ x, y, vx:Math.cos(a)*spd, vy:-Math.abs(Math.sin(a)*spd)-1, life:1, decay:0.04+Math.random()*0.03, r:Math.random()*2.5+1, color });
+            }
         }
         function runnerLoop() {
             if (isGameOver || activeGame !== 'runner') return;
-            if ((keys['Space'] || touchState.action) && runner.isGrounded) { runner.vy = runner.jumpPower; runner.isGrounded = false; playSound('jump'); }
+            runnerPulse += 0.05;
+            if ((keys['Space'] || touchState.action) && runner.isGrounded) { runner.vy = runner.jumpPower; runner.isGrounded = false; playSound('jump'); spawnRunnerParticles(runner.x, runner.y, '#fbbf24', 8); }
             runner.vy += runner.gravity; runner.y += runner.vy;
             const groundY = canvas.height - 150;
-            if (runner.y >= groundY) { runner.y = groundY; runner.vy = 0; runner.isGrounded = true; }
-            ctx.fillStyle = '#060112'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            if (runner.y >= groundY) {
+                if (!wasGrounded) { spawnRunnerParticles(runner.x, runner.y, '#a855f7', 10); triggerShake(3); }
+                runner.y = groundY; runner.vy = 0; runner.isGrounded = true;
+            }
+            wasGrounded = runner.isGrounded;
+
+            ctx.save();
+            applyShake(ctx);
+
+            // background gradient
+            const bg = ctx.createLinearGradient(0,0,0,canvas.height);
+            bg.addColorStop(0,'#0a0420'); bg.addColorStop(1,'#060112');
+            ctx.fillStyle = bg; ctx.fillRect(-30,-30,canvas.width+60,canvas.height+60);
+
             gridOffset = (gridOffset - runnerSpeed) % 80;
-            ctx.strokeStyle='#220847'; ctx.lineWidth=2;
+            ctx.save();
+            ctx.strokeStyle = `rgba(168,85,247,${0.18+0.07*Math.sin(runnerPulse*2)})`; ctx.lineWidth=2;
             for (let x = gridOffset; x < canvas.width; x += 80) { ctx.beginPath(); ctx.moveTo(x,groundY); ctx.lineTo(x,canvas.height); ctx.stroke(); }
-            ctx.strokeStyle='#a855f7'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(0,groundY+10); ctx.lineTo(canvas.width,groundY+10); ctx.stroke();
-            ctx.save(); ctx.translate(runner.x, runner.y); ctx.shadowBlur=15; ctx.shadowColor='#fbbf24'; ctx.fillStyle='#fbbf24'; ctx.fillRect(-runner.width/2,-runner.height,runner.width,runner.height); ctx.restore();
+            ctx.restore();
+
+            // ground line with glow
+            ctx.save(); ctx.shadowBlur=12; ctx.shadowColor='#a855f7';
+            const groundGrad = ctx.createLinearGradient(0,groundY+5,0,groundY+15);
+            groundGrad.addColorStop(0,'#e9d5ff'); groundGrad.addColorStop(1,'#a855f7');
+            ctx.strokeStyle = groundGrad; ctx.lineWidth=4;
+            ctx.beginPath(); ctx.moveTo(0,groundY+10); ctx.lineTo(canvas.width,groundY+10); ctx.stroke();
+            ctx.restore();
+
+            // runner: gradient body + glow + motion squash on jump + visor detail
+            ctx.save(); ctx.translate(runner.x, runner.y);
+            const squash = runner.isGrounded ? 1 : 1 - Math.min(0.15, Math.abs(runner.vy)*0.004);
+            ctx.scale(1/squash, squash);
+            ctx.shadowBlur=18; ctx.shadowColor='#fbbf24';
+            const rGrad = ctx.createLinearGradient(0,-runner.height,0,0);
+            rGrad.addColorStop(0,'#fef3c7'); rGrad.addColorStop(0.5,'#fbbf24'); rGrad.addColorStop(1,'#d97706');
+            ctx.fillStyle = rGrad;
+            ctx.beginPath(); ctx.roundRect(-runner.width/2,-runner.height,runner.width,runner.height, 6); ctx.fill();
+            // visor/eye detail
+            ctx.shadowBlur=0;
+            ctx.fillStyle = 'rgba(15,23,42,0.85)';
+            ctx.beginPath(); ctx.roundRect(-runner.width/2+8,-runner.height+12,runner.width-16,12,4); ctx.fill();
+            ctx.fillStyle = 'rgba(96,165,250,0.9)';
+            ctx.beginPath(); ctx.roundRect(-runner.width/2+11,-runner.height+15,runner.width-22,6,2); ctx.fill();
+            ctx.restore();
+
             obstacleTimer++;
             if (obstacleTimer > 70) { obstacles.push({ x:canvas.width+50, y:groundY+10, width:40, height:Math.random()*40+40 }); obstacleTimer=0; if (runnerSpeed<18) runnerSpeed+=0.2; }
+
             obstacles.forEach((o, idx) => {
                 o.x -= runnerSpeed;
-                ctx.save(); ctx.shadowBlur=15; ctx.shadowColor='#ec4899'; ctx.fillStyle='#ec4899'; ctx.fillRect(o.x-o.width/2, o.y-o.height, o.width, o.height); ctx.restore();
+                ctx.save(); ctx.shadowBlur=16; ctx.shadowColor='#ec4899';
+                const oGrad = ctx.createLinearGradient(o.x-o.width/2,o.y-o.height,o.x-o.width/2,o.y);
+                oGrad.addColorStop(0,'#fbcfe8'); oGrad.addColorStop(0.5,'#ec4899'); oGrad.addColorStop(1,'#9d174d');
+                ctx.fillStyle = oGrad;
+                ctx.fillRect(o.x-o.width/2, o.y-o.height, o.width, o.height);
+                ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1.5;
+                ctx.strokeRect(o.x-o.width/2, o.y-o.height, o.width, o.height);
+                // warning stripes detail
+                ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=3;
+                for (let sy=o.y-o.height+8; sy<o.y-4; sy+=10) { ctx.beginPath(); ctx.moveTo(o.x-o.width/2+3,sy); ctx.lineTo(o.x-o.width/2+o.width-3,sy-6); ctx.stroke(); }
+                ctx.restore();
                 const rx=runner.x-runner.width/2, ry=runner.y-runner.height, ox=o.x-o.width/2, oy=o.y-o.height;
-                if (rx<ox+o.width && rx+runner.width>ox && ry<oy+o.height && ry+runner.height>oy) setGameOver();
-                if (o.x < runner.x && !o.passed) { o.passed=true; score+=5; gameScoreText.innerText=score; }
+                if (rx<ox+o.width && rx+runner.width>ox && ry<oy+o.height && ry+runner.height>oy) { triggerShake(8); setGameOver(); }
+                if (o.x < runner.x && !o.passed) {
+                    o.passed=true; score+=5; gameScoreText.innerText=score;
+                    registerCombo(ctx, runner.x, runner.y-80, 5);
+                }
                 if (o.x < -100) obstacles.splice(idx,1);
             });
+
+            // particles
+            for (let i=runnerParticles.length-1;i>=0;i--) {
+                const p = runnerParticles[i];
+                p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=p.decay;
+                if (p.life<=0) { runnerParticles.splice(i,1); continue; }
+                ctx.save(); ctx.globalAlpha=Math.max(0,p.life); ctx.shadowBlur=6; ctx.shadowColor=p.color; ctx.fillStyle=p.color;
+                ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); ctx.fill(); ctx.restore();
+            }
+
             requestAnimationFrame(runnerLoop);
         }
 
-        // RETRO BREAKER
-        let paddle, ball, bricks;
+        // RETRO BREAKER (enhanced visuals)
+        let paddle, ball, bricks, breakerParticles, ballTrail;
         function initBreakerGame() {
+            shakeAmount = 0; resetCombo(); comboFlashText = null;
             paddle = { x:canvas.width/2, y:canvas.height-80, width:140, height:18, speed:12 };
             ball = { x:canvas.width/2, y:canvas.height-140, r:10, vx:5, vy:-5, isLaunched:false };
-            bricks = [];
+            bricks = []; breakerParticles = []; ballTrail = [];
             const rows=4, cols=10, bWidth=110, bHeight=25;
             const startX = (canvas.width-(cols*bWidth+(cols-1)*8))/2;
             const colors = ['#f43f5e','#fb923c','#10b981','#60a5fa'];
             for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) bricks.push({ x:startX+c*(bWidth+8), y:100+r*(bHeight+8), width:bWidth, height:bHeight, color:colors[r] });
             requestAnimationFrame(breakerLoop);
+        }
+        function spawnBreakerParticles(x, y, color, count) {
+            for (let i=0;i<count;i++) {
+                const a = Math.random()*Math.PI*2, spd = Math.random()*3.5+1.5;
+                breakerParticles.push({ x, y, vx:Math.cos(a)*spd, vy:Math.sin(a)*spd, life:1, decay:0.03+Math.random()*0.025, r:Math.random()*2.5+1.5, color });
+            }
+        }
+        function shadeColor(hex, percent) {
+            const num = parseInt(hex.slice(1),16);
+            let r = (num>>16) + percent, g = ((num>>8)&0xff) + percent, b = (num&0xff) + percent;
+            r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
+            return `rgb(${r},${g},${b})`;
         }
         function breakerLoop() {
             if (isGameOver || activeGame !== 'breaker') return;
@@ -505,77 +739,453 @@
             if (!ball.isLaunched) { ball.x=paddle.x; ball.y=paddle.y-25; }
             else {
                 ball.x+=ball.vx; ball.y+=ball.vy;
+                ballTrail.push({x:ball.x, y:ball.y});
+                if (ballTrail.length > 10) ballTrail.shift();
                 if (ball.x<ball.r || ball.x>canvas.width-ball.r) { ball.vx*=-1; playSound('hit'); }
                 if (ball.y<ball.r) { ball.vy*=-1; playSound('hit'); }
                 if (ball.y>canvas.height) setGameOver();
                 if (ball.y+ball.r>=paddle.y-paddle.height/2 && ball.x>paddle.x-paddle.width/2 && ball.x<paddle.x+paddle.width/2) { ball.vy*=-1; ball.vx=((ball.x-paddle.x)/(paddle.width/2))*8; playSound('hit'); }
-                bricks.forEach((b,idx) => { if (ball.x+ball.r>b.x && ball.x-ball.r<b.x+b.width && ball.y+ball.r>b.y && ball.y-ball.r<b.y+b.height) { ball.vy*=-1; playSound('explosion'); bricks.splice(idx,1); score+=20; gameScoreText.innerText=score; } });
+                bricks.forEach((b,idx) => { if (ball.x+ball.r>b.x && ball.x-ball.r<b.x+b.width && ball.y+ball.r>b.y && ball.y-ball.r<b.y+b.height) { ball.vy*=-1; playSound('explosion'); spawnBreakerParticles(b.x+b.width/2, b.y+b.height/2, b.color, 16); bricks.splice(idx,1); score+=20; gameScoreText.innerText=score; } });
             }
-            ctx.fillStyle='#020617'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.save(); ctx.shadowBlur=15; ctx.shadowColor='#10b981'; ctx.fillStyle='#10b981'; ctx.fillRect(paddle.x-paddle.width/2, paddle.y-paddle.height/2, paddle.width, paddle.height); ctx.restore();
-            bricks.forEach(b => { ctx.fillStyle=b.color; ctx.fillRect(b.x,b.y,b.width,b.height); });
-            ctx.save(); ctx.shadowBlur=10; ctx.shadowColor='#ffffff'; ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill(); ctx.restore();
+
+            // background gradient
+            const bg = ctx.createLinearGradient(0,0,0,canvas.height);
+            bg.addColorStop(0,'#0c1224'); bg.addColorStop(1,'#020617');
+            ctx.fillStyle = bg; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            // paddle: gradient + glow
+            ctx.save(); ctx.shadowBlur=16; ctx.shadowColor='#10b981';
+            const pGrad = ctx.createLinearGradient(paddle.x-paddle.width/2,0,paddle.x+paddle.width/2,0);
+            pGrad.addColorStop(0,'#6ee7b7'); pGrad.addColorStop(0.5,'#10b981'); pGrad.addColorStop(1,'#047857');
+            ctx.fillStyle = pGrad;
+            ctx.beginPath(); ctx.roundRect(paddle.x-paddle.width/2, paddle.y-paddle.height/2, paddle.width, paddle.height, 6); ctx.fill();
+            ctx.restore();
+
+            // bricks: gradient + 3D bevel highlight/shadow
+            bricks.forEach(b => {
+                ctx.save();
+                const bGrad = ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.height);
+                bGrad.addColorStop(0, shadeColor(b.color, 40));
+                bGrad.addColorStop(1, shadeColor(b.color, -30));
+                ctx.fillStyle = bGrad;
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+                // top highlight bevel
+                ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                ctx.fillRect(b.x, b.y, b.width, 3);
+                ctx.fillStyle = 'rgba(0,0,0,0.25)';
+                ctx.fillRect(b.x, b.y+b.height-3, b.width, 3);
+                ctx.restore();
+            });
+
+            // ball trail (fading glow)
+            ballTrail.forEach((t, i) => {
+                ctx.save();
+                ctx.globalAlpha = (i / ballTrail.length) * 0.4;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(t.x, t.y, ball.r*0.7, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            });
+
+            // ball: gradient + glow
+            ctx.save(); ctx.shadowBlur=14; ctx.shadowColor='#ffffff';
+            const ballGrad = ctx.createRadialGradient(ball.x-3,ball.y-3,1,ball.x,ball.y,ball.r);
+            ballGrad.addColorStop(0,'#ffffff'); ballGrad.addColorStop(1,'#cbd5e1');
+            ctx.fillStyle = ballGrad;
+            ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+
+            // particles
+            for (let i=breakerParticles.length-1;i>=0;i--) {
+                const p = breakerParticles[i];
+                p.x+=p.vx; p.y+=p.vy; p.vx*=0.96; p.vy*=0.96; p.life-=p.decay;
+                if (p.life<=0) { breakerParticles.splice(i,1); continue; }
+                ctx.save(); ctx.globalAlpha=Math.max(0,p.life); ctx.shadowBlur=6; ctx.shadowColor=p.color; ctx.fillStyle=p.color;
+                ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); ctx.fill(); ctx.restore();
+            }
+
             requestAnimationFrame(breakerLoop);
         }
 
-        // COIN CATCHER
-        let basket, fallingItems, coinSpawnTimer, coinSpeed, coinHud;
-        function initCoinGame() {
-            basket = { x: canvas.width/2, width: 120, height: 60, speed: 14 };
-            fallingItems = []; coinSpawnTimer = 0; coinSpeed = 5; lives = 3;
-            if (!coinHud) {
-                coinHud = document.createElement('div');
-                coinHud.id = 'coinLivesHud';
-                coinHud.style.cssText = 'position:absolute;top:10px;right:14px;z-index:20;font-family:monospace;font-size:22px;color:#ff5252;text-shadow:0 0 6px #000;';
-                canvas.parentElement.appendChild(coinHud);
-            }
-            coinHud.style.display = 'block';
-            coinHud.innerText = '❤️❤️❤️';
-            requestAnimationFrame(coinLoop);
+        // canvas direct-tap support (for games like Reactor Overload)
+        function getCanvasTapX(clientX) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            return (clientX - rect.left) * scaleX;
         }
-        function coinLoop() {
-            if (isGameOver || activeGame !== 'coin') { if (coinHud) coinHud.style.display = 'none'; return; }
-            if (keys['ArrowLeft'] || touchState.left) basket.x = Math.max(basket.width/2, basket.x - basket.speed);
-            if (keys['ArrowRight'] || touchState.right) basket.x = Math.min(canvas.width - basket.width/2, basket.x + basket.speed);
-            coinSpawnTimer++;
-            if (coinSpawnTimer > Math.max(18, 38 - Math.floor(score/100))) {
-                coinSpawnTimer = 0;
-                const roll = Math.random();
-                let type = 'coin';
-                if (roll > 0.93) type = 'diamond';
-                else if (roll > 0.72) type = 'bomb';
-                fallingItems.push({ x: Math.random()*(canvas.width-60)+30, y: -30, r: type==='diamond'?16:(type==='bomb'?20:18), speed: coinSpeed + Math.random()*2, type });
-                if (coinSpeed < 13) coinSpeed += 0.05;
+        canvas.addEventListener('click', e => {
+            if (activeGame === 'reactor' && !isGameOver) handleReactorTap(getCanvasTapX(e.clientX));
+        });
+        canvas.addEventListener('touchstart', e => {
+            if (activeGame === 'reactor' && !isGameOver) {
+                e.preventDefault();
+                handleReactorTap(getCanvasTapX(e.touches[0].clientX));
             }
-            ctx.fillStyle = '#0b0f1a'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.save(); ctx.shadowBlur=14; ctx.shadowColor='#facc15'; ctx.fillStyle='#854d0e'; ctx.beginPath();
-            ctx.moveTo(basket.x-basket.width/2, canvas.height-90);
-            ctx.lineTo(basket.x+basket.width/2, canvas.height-90);
-            ctx.lineTo(basket.x+basket.width/2-15, canvas.height-30);
-            ctx.lineTo(basket.x-basket.width/2+15, canvas.height-30);
-            ctx.closePath(); ctx.fill();
-            ctx.fillStyle = '#facc15'; ctx.fillRect(basket.x-basket.width/2-4, canvas.height-96, basket.width+8, 10);
+        }, { passive: false });
+
+        // REACTOR OVERLOAD (enhanced visuals)
+        let reactorNodes, reactorSpawnTimer, reactorSpeed, reactorHeat, reactorHud, reactorChannels, reactorParticles, reactorPulse, reactorCoreRot;
+        const REACTOR_COLORS = [
+            { key:'red',    fill:'#f87171', core:'#fecaca', glow:'#ef4444' },
+            { key:'blue',   fill:'#60a5fa', core:'#dbeafe', glow:'#3b82f6' },
+            { key:'yellow', fill:'#fde047', core:'#fef9c3', glow:'#facc15' },
+            { key:'purple', fill:'#c084fc', core:'#f3e8ff', glow:'#a855f7' }
+        ];
+        function initReactorGame() {
+            shakeAmount = 0; resetCombo(); comboFlashText = null;
+            const chW = canvas.width / 4;
+            reactorChannels = REACTOR_COLORS.map((c, i) => ({ ...c, x: i*chW, w: chW, flash: 0 }));
+            reactorNodes = []; reactorParticles = []; reactorSpawnTimer = 0; reactorSpeed = 3.5; reactorHeat = 0;
+            reactorPulse = 0; reactorCoreRot = 0;
+            if (!reactorHud) {
+                reactorHud = document.createElement('div');
+                reactorHud.id = 'reactorHeatHud';
+                reactorHud.style.cssText = 'position:absolute;top:10px;right:14px;left:14px;z-index:20;';
+                reactorHud.innerHTML = '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:#94a3b8;font-family:monospace;letter-spacing:1px;">HEAT</span><div style="flex:1;background:rgba(0,0,0,0.5);border-radius:8px;height:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.15);box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);"><div id="reactorHeatBar" style="height:100%;width:0%;background:linear-gradient(90deg,#22d3ee,#facc15,#ef4444);transition:width .15s;box-shadow:0 0 12px rgba(239,68,68,0.6);"></div></div></div>';
+                canvas.parentElement.appendChild(reactorHud);
+            }
+            reactorHud.style.display = 'block';
+            document.getElementById('reactorHeatBar').style.width = '0%';
+            requestAnimationFrame(reactorLoop);
+        }
+        function spawnReactorParticles(x, y, color, count, power) {
+            for (let i = 0; i < count; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const spd = (Math.random()*0.6+0.4) * power;
+                reactorParticles.push({
+                    x, y, vx: Math.cos(a)*spd, vy: Math.sin(a)*spd,
+                    life: 1, decay: 0.02 + Math.random()*0.02,
+                    r: Math.random()*3+1.5, color
+                });
+            }
+        }
+        function handleReactorTap(x) {
+            const ch = reactorChannels.find(c => x >= c.x && x < c.x + c.w);
+            if (!ch) return;
+            ch.flash = 10;
+            const targetY = canvas.height - 90;
+            let hit = false;
+            for (let i = reactorNodes.length - 1; i >= 0; i--) {
+                const n = reactorNodes[i];
+                if (n.color !== ch.key) continue;
+                if (Math.abs(n.y - targetY) < 70) {
+                    spawnReactorParticles(n.x, n.y, ch.glow, 18, 7);
+                    reactorNodes.splice(i, 1);
+                    score += 10; gameScoreText.innerText = score;
+                    playSound('jump');
+                    reactorHeat = Math.max(0, reactorHeat - 4);
+                    hit = true;
+                    break;
+                }
+            }
+            if (!hit) {
+                reactorHeat = Math.min(100, reactorHeat + 8);
+                playSound('hit');
+                spawnReactorParticles(ch.x + ch.w/2, targetY, '#64748b', 8, 3);
+            }
+        }
+        function reactorLoop() {
+            if (isGameOver || activeGame !== 'reactor') { if (reactorHud) reactorHud.style.display = 'none'; return; }
+
+            reactorPulse += 0.06;
+            reactorCoreRot += 0.012;
+
+            reactorSpawnTimer++;
+            if (reactorSpawnTimer > Math.max(28, 55 - Math.floor(score/60))) {
+                reactorSpawnTimer = 0;
+                const ch = reactorChannels[Math.floor(Math.random()*4)];
+                reactorNodes.push({ color: ch.key, x: ch.x + ch.w/2, y: -30, speed: reactorSpeed + Math.random(), spin: 0 });
+                if (reactorSpeed < 9) reactorSpeed += 0.04;
+            }
+
+            // ---- BACKGROUND: deep gradient + hex grid ----
+            const bgGrad = ctx.createLinearGradient(0,0,0,canvas.height);
+            bgGrad.addColorStop(0, '#0d0d1a'); bgGrad.addColorStop(1, '#05050a');
+            ctx.fillStyle = bgGrad; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            // subtle hex pattern
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255,255,255,0.025)'; ctx.lineWidth = 1;
+            const hexSize = 38;
+            for (let row = 0; row < canvas.height/hexSize + 2; row++) {
+                for (let col = 0; col < canvas.width/hexSize + 2; col++) {
+                    const ox = col*hexSize*1.5 + (row%2)*hexSize*0.75;
+                    const oy = row*hexSize*0.87;
+                    ctx.beginPath();
+                    for (let i=0;i<6;i++) {
+                        const a = i*Math.PI/3;
+                        const px = ox + Math.cos(a)*hexSize*0.5, py = oy + Math.sin(a)*hexSize*0.5;
+                        i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+                    }
+                    ctx.closePath(); ctx.stroke();
+                }
+            }
             ctx.restore();
-            fallingItems.forEach((item, idx) => {
-                item.y += item.speed;
-                ctx.save(); ctx.beginPath(); ctx.arc(item.x, item.y, item.r, 0, Math.PI*2);
-                if (item.type === 'coin') { ctx.shadowBlur=10; ctx.shadowColor='#facc15'; ctx.fillStyle='#fde047'; }
-                else if (item.type === 'diamond') { ctx.shadowBlur=14; ctx.shadowColor='#22d3ee'; ctx.fillStyle='#67e8f9'; }
-                else { ctx.shadowBlur=12; ctx.shadowColor='#ef4444'; ctx.fillStyle='#1f2937'; }
-                ctx.fill();
-                if (item.type === 'bomb') { ctx.fillStyle='#ef4444'; ctx.fillRect(item.x-2, item.y-item.r-8, 4, 8); }
+
+            // heat vignette (red glow intensifies at edges as heat rises)
+            if (reactorHeat > 15) {
+                const vign = ctx.createRadialGradient(canvas.width/2,canvas.height/2,canvas.height*0.3,canvas.width/2,canvas.height/2,canvas.height*0.75);
+                const intensity = Math.min(0.55, reactorHeat/100*0.55);
+                vign.addColorStop(0,'rgba(239,68,68,0)'); vign.addColorStop(1,`rgba(239,68,68,${intensity})`);
+                ctx.fillStyle = vign; ctx.fillRect(0,0,canvas.width,canvas.height);
+            }
+
+            // ---- CHANNELS with gradient fill + flash ----
+            reactorChannels.forEach((ch, ci) => {
+                ctx.save();
+                const grad = ctx.createLinearGradient(ch.x,0,ch.x+ch.w,0);
+                const baseAlpha = ch.flash > 0 ? 0.30 : 0.08;
+                grad.addColorStop(0, `${ch.glow}00`);
+                grad.addColorStop(0.5, ch.glow + Math.round(baseAlpha*255).toString(16).padStart(2,'0'));
+                grad.addColorStop(1, `${ch.glow}00`);
+                ctx.fillStyle = grad;
+                ctx.fillRect(ch.x, 0, ch.w, canvas.height);
                 ctx.restore();
-                const caughtY = canvas.height-70;
-                if (item.y+item.r > caughtY-10 && item.y-item.r < caughtY+20 && item.x > basket.x-basket.width/2 && item.x < basket.x+basket.width/2) {
-                    if (item.type === 'bomb') { loseLife(); }
-                    else { playSound('jump'); score += (item.type === 'diamond') ? 50 : 10; gameScoreText.innerText = score; }
-                    fallingItems.splice(idx,1);
-                } else if (item.y > canvas.height+40) {
-                    if (item.type !== 'bomb') loseLife();
-                    fallingItems.splice(idx,1);
+                if (ch.flash > 0) ch.flash--;
+
+                // divider line with subtle glow
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(ch.x, 0); ctx.lineTo(ch.x, canvas.height); ctx.stroke();
+                ctx.restore();
+            });
+
+            // ---- ACTIVATION ZONE: glowing energy ring band ----
+            const zoneY = canvas.height - 90;
+            ctx.save();
+            const zoneGlow = ctx.createLinearGradient(0, zoneY-18, 0, zoneY+18);
+            zoneGlow.addColorStop(0, 'rgba(255,255,255,0)');
+            zoneGlow.addColorStop(0.5, `rgba(255,255,255,${0.06 + 0.03*Math.sin(reactorPulse*2)})`);
+            zoneGlow.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = zoneGlow; ctx.fillRect(0, zoneY-18, canvas.width, 36);
+            ctx.strokeStyle = `rgba(255,255,255,${0.35 + 0.15*Math.sin(reactorPulse*2)})`; ctx.lineWidth = 2;
+            ctx.setLineDash([12,8]);
+            ctx.beginPath(); ctx.moveTo(0, zoneY); ctx.lineTo(canvas.width, zoneY); ctx.stroke();
+            ctx.restore();
+
+            // ---- NODES: layered gradient orb + rotating energy ring + core highlight ----
+            reactorNodes.forEach((n, idx) => {
+                n.y += n.speed;
+                n.spin += 0.05;
+                const colorDef = REACTOR_COLORS.find(c => c.key === n.color);
+                const pulseR = 22 + Math.sin(reactorPulse*3 + idx) * 2;
+
+                ctx.save();
+                ctx.translate(n.x, n.y);
+
+                // outer glow halo
+                ctx.shadowBlur = 26; ctx.shadowColor = colorDef.glow;
+                const orbGrad = ctx.createRadialGradient(-pulseR*0.3,-pulseR*0.3,2, 0,0,pulseR);
+                orbGrad.addColorStop(0, colorDef.core);
+                orbGrad.addColorStop(0.5, colorDef.fill);
+                orbGrad.addColorStop(1, colorDef.glow);
+                ctx.fillStyle = orbGrad;
+                ctx.beginPath(); ctx.arc(0,0,pulseR,0,Math.PI*2); ctx.fill();
+
+                // rotating energy ring around orb
+                ctx.shadowBlur = 0;
+                ctx.rotate(n.spin);
+                ctx.strokeStyle = `${colorDef.core}cc`; ctx.lineWidth = 2;
+                ctx.setLineDash([6,5]);
+                ctx.beginPath(); ctx.arc(0,0,pulseR+6,0,Math.PI*1.5); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // small specular highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.beginPath(); ctx.arc(-pulseR*0.32,-pulseR*0.32, pulseR*0.22, 0, Math.PI*2); ctx.fill();
+
+                ctx.restore();
+
+                if (n.y > canvas.height + 40) {
+                    reactorNodes.splice(idx, 1);
+                    reactorHeat = Math.min(100, reactorHeat + 10);
                 }
             });
-            if (coinHud) coinHud.innerText = '❤️'.repeat(Math.max(lives,0)) + '🖤'.repeat(Math.max(3-lives,0));
+
+            // ---- PARTICLES (explosion sparks on tap) ----
+            for (let i = reactorParticles.length - 1; i >= 0; i--) {
+                const p = reactorParticles[i];
+                p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life -= p.decay;
+                if (p.life <= 0) { reactorParticles.splice(i,1); continue; }
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.shadowBlur = 8; ctx.shadowColor = p.color;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+
+            // ---- TAP labels with channel-colored glow ----
+            reactorChannels.forEach(ch => {
+                ctx.save();
+                ctx.font = 'bold 13px monospace';
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 6; ctx.shadowColor = ch.glow;
+                ctx.fillStyle = 'rgba(255,255,255,0.65)';
+                ctx.fillText('▲ TAP', ch.x + ch.w/2, canvas.height - 18);
+                ctx.restore();
+            });
+
+            const heatBar = document.getElementById('reactorHeatBar');
+            if (heatBar) heatBar.style.width = reactorHeat + '%';
+            if (reactorHeat >= 100) {
+                spawnReactorParticles(canvas.width/2, canvas.height/2, '#ef4444', 40, 10);
+                setGameOver(); if (reactorHud) reactorHud.style.display = 'none'; return;
+            }
+
+            requestAnimationFrame(reactorLoop);
+        }
+
+        // STAR HARVEST
+        let starShip, starItems, starSpawnTimer, starSpeed, starHud;
+        function initCoinGame() {
+            starShip = { x: canvas.width/2, width: 110, height: 50, speed: 14 };
+            starItems = []; starSpawnTimer = 0; starSpeed = 4.5; lives = 3;
+            if (!starHud) {
+                starHud = document.createElement('div');
+                starHud.id = 'starLivesHud';
+                starHud.style.cssText = 'position:absolute;top:10px;right:14px;z-index:20;font-family:monospace;font-size:20px;color:#f8fafc;text-shadow:0 0 8px #6366f1;';
+                canvas.parentElement.appendChild(starHud);
+            }
+            starHud.style.display = 'block';
+            starHud.innerText = '🛡️🛡️🛡️';
+            requestAnimationFrame(coinLoop);
+        }
+
+        // background stars for star harvest
+        const bgStars = Array.from({length:120}, () => ({
+            x: Math.random()*1280, y: Math.random()*720,
+            r: Math.random()*1.2+0.2, twinkle: Math.random()*Math.PI*2
+        }));
+
+        function coinLoop() {
+            if (isGameOver || activeGame !== 'coin') { if (starHud) starHud.style.display = 'none'; return; }
+
+            // move ship
+            if (keys['ArrowLeft'] || touchState.left) starShip.x = Math.max(starShip.width/2, starShip.x - starShip.speed);
+            if (keys['ArrowRight'] || touchState.right) starShip.x = Math.min(canvas.width - starShip.width/2, starShip.x + starShip.speed);
+
+            // spawn items
+            starSpawnTimer++;
+            if (starSpawnTimer > Math.max(16, 36 - Math.floor(score/80))) {
+                starSpawnTimer = 0;
+                const roll = Math.random();
+                let type = 'star';
+                if (roll > 0.91) type = 'solar';
+                else if (roll > 0.68) type = 'asteroid';
+                starItems.push({
+                    x: Math.random()*(canvas.width-80)+40,
+                    y: -35,
+                    r: type==='solar'?18:(type==='asteroid'?22:14),
+                    speed: starSpeed + Math.random()*2.5,
+                    type, angle: Math.random()*Math.PI*2, spin: (Math.random()-0.5)*0.12
+                });
+                if (starSpeed < 12) starSpeed += 0.04;
+            }
+
+            // ---- DRAW ----
+            // deep space background
+            ctx.fillStyle = '#020817'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            // nebula glow (subtle)
+            const nebula = ctx.createRadialGradient(640,300,100,640,300,500);
+            nebula.addColorStop(0,'rgba(99,102,241,0.06)'); nebula.addColorStop(1,'rgba(0,0,0,0)');
+            ctx.fillStyle = nebula; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            // twinkling bg stars
+            bgStars.forEach(s => {
+                s.twinkle += 0.04;
+                const a = 0.4 + 0.35*Math.sin(s.twinkle);
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(255,255,255,${a})`; ctx.fill();
+            });
+
+            // draw spaceship (triangle hull + wings + engine glow)
+            const sx = starShip.x, sy = canvas.height - 80;
+            ctx.save();
+            ctx.shadowBlur = 20; ctx.shadowColor = '#6366f1';
+            // engine glow
+            const eng = ctx.createRadialGradient(sx, sy+30, 2, sx, sy+30, 18);
+            eng.addColorStop(0,'rgba(129,140,248,0.9)'); eng.addColorStop(1,'rgba(0,0,0,0)');
+            ctx.fillStyle = eng; ctx.fillRect(sx-18, sy+14, 36, 36);
+            // left wing
+            ctx.fillStyle='#4338ca';
+            ctx.beginPath(); ctx.moveTo(sx-20,sy+10); ctx.lineTo(sx-55,sy+28); ctx.lineTo(sx-20,sy+28); ctx.closePath(); ctx.fill();
+            // right wing
+            ctx.beginPath(); ctx.moveTo(sx+20,sy+10); ctx.lineTo(sx+55,sy+28); ctx.lineTo(sx+20,sy+28); ctx.closePath(); ctx.fill();
+            // main hull
+            ctx.fillStyle='#818cf8';
+            ctx.beginPath(); ctx.moveTo(sx, sy-20); ctx.lineTo(sx+20,sy+28); ctx.lineTo(sx-20,sy+28); ctx.closePath(); ctx.fill();
+            // cockpit
+            ctx.fillStyle='#e0e7ff'; ctx.beginPath(); ctx.ellipse(sx, sy+4, 7, 10, 0, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+
+            // draw falling items
+            starItems.forEach((item, idx) => {
+                item.y += item.speed;
+                item.angle += item.spin;
+                ctx.save();
+                ctx.translate(item.x, item.y);
+                ctx.rotate(item.angle);
+
+                if (item.type === 'star') {
+                    // 5-pointed star shape
+                    ctx.shadowBlur=16; ctx.shadowColor='#fde047';
+                    ctx.fillStyle='#fef08a';
+                    ctx.beginPath();
+                    for (let i=0;i<5;i++) {
+                        const a = (i*4*Math.PI/5) - Math.PI/2;
+                        const b = (i*4*Math.PI/5 + 2*Math.PI/5) - Math.PI/2;
+                        i===0 ? ctx.moveTo(Math.cos(a)*item.r, Math.sin(a)*item.r) : ctx.lineTo(Math.cos(a)*item.r, Math.sin(a)*item.r);
+                        ctx.lineTo(Math.cos(b)*item.r*0.45, Math.sin(b)*item.r*0.45);
+                    }
+                    ctx.closePath(); ctx.fill();
+                } else if (item.type === 'solar') {
+                    // sun orb with rays
+                    ctx.shadowBlur=24; ctx.shadowColor='#f97316';
+                    const sol = ctx.createRadialGradient(0,0,2,0,0,item.r);
+                    sol.addColorStop(0,'#fff7ed'); sol.addColorStop(0.5,'#fb923c'); sol.addColorStop(1,'#ea580c');
+                    ctx.fillStyle=sol;
+                    ctx.beginPath(); ctx.arc(0,0,item.r,0,Math.PI*2); ctx.fill();
+                    ctx.strokeStyle='rgba(251,146,60,0.5)'; ctx.lineWidth=2;
+                    for (let i=0;i<8;i++) {
+                        const a=i*Math.PI/4;
+                        ctx.beginPath(); ctx.moveTo(Math.cos(a)*(item.r+3), Math.sin(a)*(item.r+3));
+                        ctx.lineTo(Math.cos(a)*(item.r+10), Math.sin(a)*(item.r+10)); ctx.stroke();
+                    }
+                } else {
+                    // dark asteroid (jagged rock)
+                    ctx.shadowBlur=10; ctx.shadowColor='#7f1d1d';
+                    ctx.fillStyle='#292524';
+                    ctx.beginPath();
+                    for (let i=0;i<8;i++) {
+                        const a=i*Math.PI/4, jag=item.r*(0.7+0.35*Math.sin(i*2.3));
+                        i===0?ctx.moveTo(Math.cos(a)*jag,Math.sin(a)*jag):ctx.lineTo(Math.cos(a)*jag,Math.sin(a)*jag);
+                    }
+                    ctx.closePath(); ctx.fill();
+                    ctx.strokeStyle='#57534e'; ctx.lineWidth=1.5; ctx.stroke();
+                    // crack detail
+                    ctx.strokeStyle='rgba(87,83,78,0.6)'; ctx.lineWidth=1;
+                    ctx.beginPath(); ctx.moveTo(-5,-4); ctx.lineTo(3,6); ctx.lineTo(7,1); ctx.stroke();
+                }
+                ctx.restore();
+
+                // catch detection
+                const catchY = canvas.height - 65;
+                const caught = item.y+item.r > catchY-8 && item.y-item.r < catchY+22
+                             && item.x > starShip.x-starShip.width/2 && item.x < starShip.x+starShip.width/2;
+                const missed = item.y > canvas.height+50;
+
+                if (caught) {
+                    if (item.type === 'asteroid') { loseLife(); playSound('explosion'); }
+                    else { playSound('jump'); score += item.type==='solar'?50:10; gameScoreText.innerText = score; }
+                    starItems.splice(idx,1);
+                } else if (missed) {
+                    if (item.type !== 'asteroid') loseLife();
+                    starItems.splice(idx,1);
+                }
+            });
+
+            if (starHud) starHud.innerText = '🛡️'.repeat(Math.max(lives,0)) + '💀'.repeat(Math.max(3-lives,0));
             requestAnimationFrame(coinLoop);
         }
     </script>
@@ -604,8 +1214,10 @@
                 cyberRunnerDesc: "Game nhảy né chướng ngại vật phong cách Neon Cyberpunk cực kỳ cuốn hút.",
                 retroBreakerTitle: "Retro Breaker",
                 retroBreakerDesc: "Đập bóng phá vỡ các mảng gạch đầy màu sắc cổ điển. Thể loại game đập gạch gây nghiện cực cao.",
-                coinCatcherTitle: "Coin Catcher",
-                coinCatcherDesc: "Hứng xu vàng và kim cương rơi xuống, tránh xa những quả bom nguy hiểm. Mất 3 mạng là thua!",
+                coinCatcherTitle: "Star Harvest",
+                coinCatcherDesc: "Lái tàu vũ trụ hứng tinh tú và năng lượng mặt trời, tránh đá tối nguy hiểm. Mất 3 mạng là thua!",
+                reactorTitle: "Reactor Overload",
+                reactorDesc: "Chạm đúng kênh màu để hạ nhiệt lò phản ứng trước khi nó quá tải và nổ tung!",
                 playNow: "Chơi ngay",
                 newReleases: "🌟 GAME MỚI PHÁT HÀNH",
                 connectingDb: "Đang kết nối kho dữ liệu GamHub...",
@@ -619,6 +1231,7 @@
                 actionJump: "NHẢY",
                 actionHit: "KÍCH BÓNG",
                 actionCatch: "HỨNG",
+                actionTap: "CHẠM",
                 footer: "© 2026 GamHub.Store",
                 sendFail: "Gửi thất bại, thử lại!"
             },
@@ -643,8 +1256,10 @@
                 cyberRunnerDesc: "A super addictive Neon Cyberpunk-style endless runner game.",
                 retroBreakerTitle: "Retro Breaker",
                 retroBreakerDesc: "Smash colorful classic brick walls with the ball. A highly addictive brick-breaker game.",
-                coinCatcherTitle: "Coin Catcher",
-                coinCatcherDesc: "Catch falling gold coins and diamonds, avoid the dangerous bombs. Lose 3 lives and it's game over!",
+                coinCatcherTitle: "Star Harvest",
+                coinCatcherDesc: "Pilot a spaceship to catch stars and solar energy, avoid dangerous dark asteroids. Lose 3 lives and it's game over!",
+                reactorTitle: "Reactor Overload",
+                reactorDesc: "Tap the right color channel to cool down the reactor before it overheats and explodes!",
                 playNow: "Play now",
                 newReleases: "🌟 NEW RELEASES",
                 connectingDb: "Connecting to GamHub database...",
@@ -658,6 +1273,7 @@
                 actionJump: "JUMP",
                 actionHit: "HIT BALL",
                 actionCatch: "CATCH",
+                actionTap: "TAP",
                 footer: "© 2026 GamHub.Store",
                 sendFail: "Failed to send, please try again!"
             }

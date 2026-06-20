@@ -67,13 +67,21 @@
         }
         
         .header-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 20px; flex-shrink: 0;}
-        .top-info h1 { font-family: 'Orbitron'; font-size: 1.5em; margin: 0; color: var(--wire); text-shadow: 0 0 10px var(--wire-glow); }
-        .top-info .level-txt { font-size: 1.2em; font-weight: 700; color: #fff; background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 4px; border: 1px solid var(--border); display: inline-block; margin-top: 5px;}
-        #timer-board { font-family: 'Orbitron'; font-size: 2em; color: var(--bulb); font-weight: 700; background: #000; padding: 5px 20px; border: 2px solid var(--bulb); border-radius: 8px; box-shadow: 0 0 15px var(--bulb-glow); }
+        .top-info { display: flex; align-items: center; gap: 10px; }
+        .top-info .level-txt { font-size: 1.2em; font-weight: 700; color: var(--wire); background: rgba(0,0,0,0.5); padding: 2px 14px; border-radius: 4px; border: 1px solid var(--wire); display: inline-flex; align-items:center; gap:8px; margin-top: 5px; box-shadow: 0 0 12px var(--wire-glow), inset 0 0 8px var(--wire-glow); transition: 0.5s;}
+        .logo-icon { font-size: 1.6em; filter: drop-shadow(0 0 6px var(--wire)); display:inline-block; }
+        #timer-board { font-family: 'Orbitron'; font-size: 2em; color: var(--bulb); font-weight: 700; background: #000; padding: 5px 20px; border: 2px solid var(--bulb); border-radius: 8px; box-shadow: 0 0 15px var(--bulb-glow); transition: 0.3s; }
+        #timer-board.warning { color: #ff3b3b; border-color: #ff3b3b; animation: timerWarnPulse 0.6s infinite alternate; }
+        @keyframes timerWarnPulse { from { box-shadow: 0 0 15px rgba(255,59,59,0.5); } to { box-shadow: 0 0 30px rgba(255,59,59,0.9); } }
+
+        #danger-vignette { position: fixed; inset: 0; pointer-events: none; z-index: 9996; opacity: 0; background: radial-gradient(circle, rgba(255,0,0,0) 55%, rgba(255,0,0,0.35) 100%); transition: opacity 0.4s; }
+        #danger-vignette.show { opacity: 1; animation: dangerPulse 0.8s infinite alternate; }
+        @keyframes dangerPulse { from { opacity: 0.5; } to { opacity: 0.9; } }
         
         .tool-bar { display: flex; gap: 10px; }
         .btn-tool { padding: 8px 15px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1em; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: 0.2s; text-transform: uppercase;}
         .btn-tool:hover { border-color: var(--wire); color: var(--wire); box-shadow: inset 0 0 10px var(--wire-glow); }
+        #btn-theme:hover { border-color: var(--border); color: #fff; box-shadow: none; cursor: default; }
         
         #btn-3d { border-color: var(--wire); color: var(--wire); box-shadow: inset 0 0 5px var(--wire-glow); position: relative; overflow: hidden;}
         #btn-3d.active { background: var(--wire); color: #000; box-shadow: 0 0 20px var(--wire-glow); }
@@ -93,6 +101,15 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,0,0,0.5);
             padding: 80px; transform-style: preserve-3d; transition: 0.5s;
         }
+        #game-container::before {
+            content:''; position:absolute; inset: 14px; border-radius: 8px; pointer-events:none; z-index:0;
+            background-image:
+                linear-gradient(90deg, transparent 48%, var(--wire-dim) 49%, var(--wire-dim) 50%, transparent 51%),
+                linear-gradient(0deg, transparent 70%, var(--wire-dim) 71%, var(--wire-dim) 72%, transparent 73%);
+            background-size: 140px 140px, 220px 220px; opacity: 0.08; transform: translateZ(0px);
+            animation: tracePulse 4s ease-in-out infinite;
+        }
+        @keyframes tracePulse { 0%,100% { opacity:0.06; } 50% { opacity:0.14; } }
 
         /* ─── CƠ CHẾ 3D SCAN: TÁCH RIÊNG KHỎI TRANSFORM KHUNG ─── */
         /* Chỉ tác động Shadow của Container và Màu của Cell hỏng */
@@ -102,6 +119,14 @@
         #game-container.is-3d .cell.broken {
             --tz: -15px; /* Lún xuống mà không ghi đè biến --rot của góc xoay mạch */
             background: #2a0505; border-color: #ff0000; box-shadow: inset 0 0 20px #000;
+            animation: dropIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards, brokenFlicker 2.2s infinite;
+        }
+        @keyframes brokenFlicker {
+            0%, 92%, 100% { box-shadow: inset 0 0 20px #000; }
+            93% { box-shadow: inset 0 0 20px #000, 0 0 18px 4px #ff3333; }
+            95% { box-shadow: inset 0 0 20px #000; }
+            96% { box-shadow: inset 0 0 25px 6px #ff3333; }
+            97% { box-shadow: inset 0 0 20px #000; }
         }
         #game-container.is-3d .cell.broken .wire { background: #4a1111; box-shadow: none; }
         #game-container.is-3d .cell.broken .wire::after { display: none; }
@@ -115,7 +140,25 @@
         }
         @keyframes alert-pulse { from { opacity: 0.5; } to { opacity: 1; } }
 
+        @keyframes winShake {
+            0%, 100% { transform: translate(0,0); }
+            20% { transform: translate(-6px, 4px) rotate(-0.5deg); }
+            40% { transform: translate(5px, -5px) rotate(0.5deg); }
+            60% { transform: translate(-4px, 3px); }
+            80% { transform: translate(4px, -3px); }
+        }
+        #game-container.win-shake { animation: winShake 0.5s ease-in-out; }
+
+        #win-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+
+        #win-flash { position: fixed; inset: 0; pointer-events: none; z-index: 9995; opacity: 0; background: radial-gradient(circle, var(--bulb-glow), transparent 70%); }
+        #win-flash.show { animation: winFlash 1.2s ease-out forwards; }
+        @keyframes winFlash { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+
         #board-wrapper { position: absolute; top: 80px; left: 80px; transform-style: preserve-3d; }
+        #boot-scanline { position:absolute; left:0; top:0; width:100%; height:6px; background: linear-gradient(to bottom, transparent, var(--wire), transparent); box-shadow: 0 0 20px var(--wire), 0 0 40px var(--wire); opacity:0; z-index: 50; pointer-events:none; transform: translateZ(8px); }
+        #boot-scanline.run { animation: bootScanSweep 1.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+        @keyframes bootScanSweep { 0% { top:-6px; opacity:1; } 90% { opacity:1; } 100% { top:100%; opacity:0; } }
         #fx-canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 100; transform: translateZ(10px); }
         
         #board { 
@@ -133,8 +176,13 @@
         .port-bottom { bottom:-48px; right:14px; width:48px; height:48px; border-radius:8px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:22px; background: #111;}
         
         .port-out::before { content:'💡'; filter:grayscale(1); opacity:0.2; transition: 0.3s; }
+        body.pipeline .port-out::before { content:'💧'; }
+        body.cyberpunk .port-out::before { content:'👁️'; }
+        body.steampunk .port-out::before { content:'⏱️'; }
         .port-out.active { border-color:var(--bulb); box-shadow:0 0 30px var(--bulb-glow), inset 0 0 20px var(--bulb-glow); background:#1a1a1a;}
         .port-out.active::before { filter:none; opacity:1; text-shadow:0 0 20px var(--bulb); transform: scale(1.1); }
+        .port-out.flash-on::after { content:''; position:absolute; top:50%; left:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; border:3px solid var(--bulb); pointer-events:none; animation: portRingBurst 0.6s ease-out forwards; }
+        @keyframes portRingBurst { 0% { width:10px; height:10px; margin:-5px 0 0 -5px; opacity:1; } 100% { width:90px; height:90px; margin:-45px 0 0 -45px; opacity:0; } }
 
         @keyframes dropIn { 0% { transform: translateZ(100px) scale(0.5); opacity: 0; } 100% { transform: translateZ(0px) scale(1); opacity: 1; } }
 
@@ -154,7 +202,11 @@
         .cell.active { --w-col: var(--wire); --elec: 1; border-color: var(--border-act); box-shadow: 0 0 15px var(--wire-glow), inset 0 0 10px var(--wire-glow); }
 
         .wire { position: absolute; background: var(--w-col); border-radius: 4px; transition: 0.2s; z-index: 2; transform: translateZ(1px); box-shadow: inset 0 2px 5px rgba(255,255,255,0.3), inset 0 -3px 5px rgba(0,0,0,0.6), 0 4px 6px rgba(0,0,0,0.5); }
-        .cell.active .wire { box-shadow: 0 0 10px var(--wire-glow), inset 0 2px 5px rgba(255,255,255,0.5); }
+        .cell.active .wire { box-shadow: 0 0 10px var(--wire-glow), inset 0 2px 5px rgba(255,255,255,0.5); animation: wireFlowPulse 1.4s ease-in-out infinite; }
+        @keyframes wireFlowPulse {
+            0%, 100% { box-shadow: 0 0 10px var(--wire-glow), inset 0 2px 5px rgba(255,255,255,0.5); }
+            50% { box-shadow: 0 0 22px var(--wire-glow), 0 0 8px var(--wire), inset 0 2px 5px rgba(255,255,255,0.6); }
+        }
         .wire::after { content:''; position:absolute; opacity:var(--elec); transition:0.2s; box-shadow:0 0 12px var(--wire); }
         
         .p-I .wire-body { top:0; left:20px; width:20px; height:60px; }
@@ -171,6 +223,9 @@
         .cell::before { content:''; position:absolute; top:22px; left:22px; width:16px; height:16px; background:#475569; border-radius:50%; z-index:4; transform: translateZ(2px); transition:0.2s; box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.8);}
         .cell.active::before { background:var(--wire); box-shadow:0 0 10px var(--wire); }
 
+        .rotate-ripple { position:absolute; top:50%; left:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; border:2px solid var(--wire); pointer-events:none; z-index:20; transform: translateZ(6px); animation: rippleExpand 0.5s ease-out forwards; }
+        @keyframes rippleExpand { 0% { width:10px; height:10px; margin:-5px 0 0 -5px; opacity:0.9; } 100% { width:80px; height:80px; margin:-40px 0 0 -40px; opacity:0; } }
+
         .bottom-action { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; z-index: 1000;}
         #btn-next { padding: 15px 40px; font-size: 1.2em; font-family: 'Orbitron'; font-weight: 900; background: var(--bulb); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 6px 0 #b45309, 0 10px 20px rgba(0,0,0,0.8); transition: 0.1s; text-transform: uppercase;}
         #btn-next:active { transform: translateY(6px); box-shadow: 0 0 0 #b45309, 0 0 0 rgba(0,0,0,0); }
@@ -182,20 +237,24 @@
 <body>
 
 <div id="mouse-light"></div>
+<div id="danger-vignette"></div>
+<canvas id="win-canvas"></canvas>
+<div id="win-flash"></div>
 
 <div id="root">
     <div id="game-ui">
         <div class="header-bar">
             <div class="top-info">
-                <h1>HỆ THỐNG ĐIỆN KÉP</h1>
+                <span class="logo-icon">⚡</span>
                 <div class="level-txt" id="level-title">LVL 1</div>
             </div>
             
             <div id="timer-board">02:00</div>
+            <div id="progress-wrap"><div id="progress-bar"></div><span id="progress-label">0%</span></div>
 
             <div class="tool-bar">
-                <button class="btn-tool" onclick="cycleTheme()" id="btn-theme">🎨 SKIN: TECH</button>
-                <button class="btn-tool" onclick="toggle3D()" id="btn-3d">👁️ 3D SCAN: OFF</button>
+                <button class="btn-tool" id="btn-theme" style="display:none;">🎨 SKIN: TECH</button>
+                <button class="btn-tool" onclick="toggle3D()" id="btn-3d">👁️ SCAN: OFF</button>
                 <button class="btn-tool" onclick="reset3DView()" id="btn-3d-reset" style="display:none;color:var(--wire)">⟳ ĐẶT LẠI GÓC</button>
                 <button class="btn-tool" onclick="initLevel()" style="color:var(--bulb)">↺ REBOOT</button>
             </div>
@@ -206,6 +265,7 @@
                 <div id="game-container">
                     <div id="board-wrapper">
                         <canvas id="fx-canvas"></canvas>
+                        <div id="boot-scanline"></div>
                         <div id="board">
                             <div class="port-in port-top" id="port-in-1"></div>
                             <div class="port-in port-left" id="port-in-2"></div>
@@ -221,7 +281,7 @@
             <button id="btn-next" onclick="nextLevel()">CẤP QUYỀN TIẾP THEO ▶</button>
         </div>
         
-        <div id="hint-text">Bí đường? Hãy kích hoạt <span>3D SCAN</span> để soi các linh kiện bị cháy hỏng dưới bảng mạch!</div>
+        <div id="hint-text">Bí đường? Hãy kích hoạt <span>SCAN</span> để soi các linh kiện bị cháy hỏng dưới bảng mạch!</div>
     </div>
 </div>
 
@@ -255,6 +315,7 @@
     const portOut2 = document.getElementById('port-out-2');
     const actionWrap = document.getElementById('action-wrapper');
     const timerBoard = document.getElementById('timer-board');
+    const dangerVignette = document.getElementById('danger-vignette');
     
     let currentLevel = 1, size = 9, grid = [];
     let gameWon = false, gameOver = false;
@@ -293,6 +354,84 @@
         requestAnimationFrame(animateParticles);
     }
     animateParticles();
+
+    // ─── HIỆU ỨNG THẮNG: CONFETTI TOÀN MÀN HÌNH ───
+    const winCanvas = document.getElementById('win-canvas');
+    const winCtx = winCanvas.getContext('2d');
+    let confetti = [];
+    function resizeWinCanvas() { winCanvas.width = window.innerWidth; winCanvas.height = window.innerHeight; }
+    resizeWinCanvas();
+    window.addEventListener('resize', resizeWinCanvas);
+
+    function spawnConfetti() {
+        let colorA = getComputedStyle(document.body).getPropertyValue('--wire').trim() || '#00f0ff';
+        let colorB = getComputedStyle(document.body).getPropertyValue('--bulb').trim() || '#fbbf24';
+        const colors = [colorA, colorB, '#ffffff'];
+        const themeKey = themes[currentThemeIdx] || 'tech';
+        const count = themeKey === 'steampunk' ? 70 : 140;
+        for (let i = 0; i < count; i++) {
+            let p = {
+                x: Math.random() * winCanvas.width,
+                y: themeKey === 'steampunk' ? winCanvas.height + 20 + Math.random() * 100 : -20 - Math.random() * 200,
+                vx: (Math.random() - 0.5) * 3,
+                vy: themeKey === 'steampunk' ? -(1 + Math.random() * 1.5) : 2 + Math.random() * 3,
+                size: 4 + Math.random() * 5,
+                rot: Math.random() * Math.PI * 2,
+                vr: (Math.random() - 0.5) * 0.3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                life: 1, shape: themeKey
+            };
+            if (themeKey === 'cyberpunk') { p.flicker = Math.random()*1; }
+            if (themeKey === 'steampunk') { p.size = 10 + Math.random() * 16; p.vx = (Math.random()-0.5)*0.6; }
+            if (themeKey === 'pipeline') { p.size = 3 + Math.random()*4; p.vy = 1 + Math.random()*1.5; p.wobble = Math.random()*Math.PI*2; }
+            confetti.push(p);
+        }
+    }
+
+    function animateConfetti() {
+        winCtx.clearRect(0, 0, winCanvas.width, winCanvas.height);
+        for (let i = confetti.length - 1; i >= 0; i--) {
+            let p = confetti[i];
+            p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+            if (p.shape === 'pipeline') { p.wobble += 0.08; p.x += Math.sin(p.wobble) * 0.6; }
+            if (p.shape === 'steampunk') { p.life -= 0.012; }
+            else if (p.y > winCanvas.height + 30 || p.y < -40) { p.life -= 0.05; }
+
+            winCtx.save();
+            winCtx.translate(p.x, p.y);
+            winCtx.globalAlpha = Math.max(0, p.life);
+
+            if (p.shape === 'pipeline') {
+                winCtx.fillStyle = p.color; winCtx.beginPath(); winCtx.arc(0, 0, p.size/2, 0, Math.PI*2); winCtx.fill();
+                winCtx.strokeStyle = 'rgba(255,255,255,0.5)'; winCtx.lineWidth = 1; winCtx.stroke();
+            } else if (p.shape === 'cyberpunk') {
+                winCtx.rotate(p.rot);
+                winCtx.fillStyle = (Math.sin((p.flicker+=0.3)) > 0) ? p.color : '#ffffff';
+                winCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+            } else if (p.shape === 'steampunk') {
+                winCtx.fillStyle = `rgba(220,220,220,${0.5*Math.max(0,p.life)})`;
+                winCtx.beginPath(); winCtx.arc(0, 0, p.size/2, 0, Math.PI*2); winCtx.fill();
+            } else {
+                winCtx.rotate(p.rot);
+                winCtx.fillStyle = p.color;
+                winCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+            }
+            winCtx.restore();
+            if (p.life <= 0) confetti.splice(i, 1);
+        }
+        requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+
+    function triggerWinFX() {
+        spawnConfetti();
+        gameContainer.classList.add('win-shake');
+        setTimeout(() => gameContainer.classList.remove('win-shake'), 550);
+        const winFlash = document.getElementById('win-flash');
+        winFlash.classList.remove('show'); 
+        void winFlash.offsetWidth; // restart animation
+        winFlash.classList.add('show');
+    }
 
     // ─── ĐIỀU KHIỂN TƯƠNG TÁC GÓC XOAY 3D ───
     let rotX = 0, rotY = 0, rotZ = 0, zoom3d = 1;
@@ -336,20 +475,20 @@
         if (is3D) {
             rotX = 55; rotY = 0; rotZ = -35; zoom3d = 1;
             gameContainer.classList.add('is-3d'); // Add class để nổi mảng đỏ các linh kiện hỏng
-            btn.innerText = '👁️ 3D SCAN: ON'; btn.classList.add('active');
+            btn.innerText = '👁️ SCAN: ON'; btn.classList.add('active');
             resetBtn.style.display = 'inline-block';
             playSound(400, 'square', 0.2, 0.1);
         } else {
             rotX = 0; rotY = 0; rotZ = 0; zoom3d = 1;
             gameContainer.classList.remove('is-3d');
-            btn.innerText = '👁️ 3D SCAN: OFF'; btn.classList.remove('active');
+            btn.innerText = '👁️ SCAN: OFF'; btn.classList.remove('active');
             resetBtn.style.display = 'none';
         }
         apply3DTransform();
     }
 
-    function cycleTheme() {
-        currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+    function applyThemeForLevel(level) {
+        currentThemeIdx = (level - 1) % themes.length;
         document.body.className = themes[currentThemeIdx];
         document.getElementById('btn-theme').innerText = '🎨 SKIN: ' + themeNames[currentThemeIdx];
     }
@@ -385,11 +524,11 @@
 
     function startTimer() {
         clearInterval(timerInterval); timeLeft = currentMaxTime; 
-        timerBoard.innerText = formatTime(timeLeft); timerBoard.classList.remove('warning');
+        timerBoard.innerText = formatTime(timeLeft); timerBoard.classList.remove('warning'); dangerVignette.classList.remove('show');
         timerInterval = setInterval(() => {
             if (gameWon || gameOver) { clearInterval(timerInterval); return; }
             timeLeft--; timerBoard.innerText = formatTime(timeLeft);
-            if (timeLeft <= 15) timerBoard.classList.add('warning');
+            if (timeLeft <= 15) { timerBoard.classList.add('warning'); dangerVignette.classList.add('show'); }
             if (timeLeft <= 0) {
                 gameOver = true; clearInterval(timerInterval); sfxDisconnect();
                 setTimeout(() => alert("HẾT THỜI GIAN! Hãy ấn REBOOT để chơi lại màn này nhé."), 100);
@@ -440,8 +579,12 @@
         portOut1.classList.remove('active'); portOut2.classList.remove('active');
         actionWrap.style.display = 'none';
         document.getElementById('level-title').innerText = `LVL ${currentLevel}`;
+        applyThemeForLevel(currentLevel);
 
         let levelData = generateDualLevelData();
+        
+        const bootScan = document.getElementById('boot-scanline');
+        bootScan.classList.remove('run'); void bootScan.offsetWidth; bootScan.classList.add('run');
         
         // Timeout nhỏ để đảm bảo Container tải xong height mới bắt đầu đo kích thước canh giữa
         setTimeout(() => { adjustScale(); }, 10);
@@ -457,7 +600,7 @@
                 let cellEl = document.createElement('div'); cellEl.className = 'cell';
                 if(data.broken) cellEl.classList.add('broken'); 
 
-                cellEl.style.animationDelay = `${(r * 0.02) + (c * 0.02) + (Math.random() * 0.1)}s`;
+                cellEl.style.animationDelay = `${(r * 0.045) + (c * 0.008)}s`;
 
                 let wireHTML = `<div class="p-${type}">`;
                 if (type === 'I') wireHTML += `<div class="wire wire-body"></div>`; else wireHTML += `<div class="wire wire-v"></div><div class="wire wire-h"></div>`;
@@ -478,6 +621,13 @@
         startTimer();
     }
 
+    function spawnRipple(cellEl) {
+        let r = document.createElement('div');
+        r.className = 'rotate-ripple';
+        cellEl.appendChild(r);
+        r.addEventListener('animationend', () => r.remove());
+    }
+
     function rotateCell(r, c) {
         let cell = grid[r][c];
         cell.conns.unshift(cell.conns.pop()); cell.rotSteps = (cell.rotSteps + 1) % 4;
@@ -485,7 +635,12 @@
         
         cell.el.style.setProperty('--rot', `${cell.deg}deg`);
         
-        spawnSparks(r, c); updateFlow(false);
+        spawnSparks(r, c); spawnRipple(cell.el); updateFlow(false);
+    }
+
+    function flashPort(portEl) {
+        portEl.classList.add('flash-on');
+        setTimeout(() => portEl.classList.remove('flash-on'), 650);
     }
 
     function updateFlow(isInit) {
@@ -512,8 +667,8 @@
             if (curr.conns[3] && c>0      && grid[r][c-1].conns[1] && !grid[r][c-1].active && !grid[r][c-1].broken) { grid[r][c-1].active=true; grid[r][c-1].el.classList.add('active'); queue.push([r,c-1]); }
         }
 
-        if (out1Active) portOut1.classList.add('active');
-        if (out2Active) portOut2.classList.add('active');
+        if (out1Active) { portOut1.classList.add('active'); if (!bulb1WasOn) flashPort(portOut1); }
+        if (out2Active) { portOut2.classList.add('active'); if (!bulb2WasOn) flashPort(portOut2); }
 
         if (!isInit) {
             let activeCountNew = 0;
@@ -524,7 +679,8 @@
         }
 
         if (out1Active && out2Active && !gameWon) {
-            gameWon = true; timerBoard.classList.remove('warning');
+            gameWon = true; timerBoard.classList.remove('warning'); dangerVignette.classList.remove('show');
+            triggerWinFX();
             for (let rr=0; rr<size; rr++)
                 for (let cc=0; cc<size; cc++)
                     if (grid[rr][cc].active) setTimeout(() => spawnSparks(rr, cc), Math.random()*400);

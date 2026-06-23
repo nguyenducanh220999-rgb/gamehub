@@ -3,8 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GamHub Portal</title>
-    <meta name="description" content="GamHub Portal - Chơi game HTML5 trực tuyến miễn phí ngay trên trình duyệt.">
+    <title>GamHub Portal - Chơi Game HTML5 Miễn Phí Trực Tuyến</title>
+    <meta name="description" content="GamHub Portal - Chơi game HTML5 trực tuyến miễn phí ngay trên trình duyệt. Space Storm, Cyber Runner, Retro Breaker, Star Harvest, Reactor Overload và nhiều game mới mỗi tuần.">
+    <meta name="keywords" content="game online, chơi game miễn phí, gamhub, html5 game, arcade, mini game">
+    <meta name="theme-color" content="#030712">
+    <link rel="canonical" href="https://gamhub.store/">
+
+    <!-- Favicon (inline SVG, không cần file riêng) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23030712'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%233b82f6'%3E🎮%3C/text%3E%3C/svg%3E">
+
+    <!-- Open Graph / Social sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="GamHub Portal">
+    <meta property="og:title" content="GamHub Portal - Chơi Game HTML5 Miễn Phí">
+    <meta property="og:description" content="Chơi ngay các game arcade HTML5 miễn phí: Space Storm, Cyber Runner, Retro Breaker, Star Harvest, Reactor Overload và nhiều hơn nữa.">
+    <meta property="og:url" content="https://gamhub.store/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="GamHub Portal - Chơi Game HTML5 Miễn Phí">
+    <meta name="twitter:description" content="Chơi ngay các game arcade HTML5 miễn phí ngay trên trình duyệt, không cần cài đặt.">
+
+    <!-- Preconnect để tải nhanh hơn -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -338,6 +361,9 @@
                 <h3 id="cabinetGameTitle" class="font-bold font-orbitron text-blue-400 text-sm md:text-base">Arcade Cabin</h3>
             </div>
             <div class="flex items-center gap-4">
+                <button id="btnPause" onclick="togglePause()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 transition active:scale-90">
+                    <i class="fa-solid fa-pause text-xs"></i>
+                </button>
                 <div class="bg-black/40 border border-slate-800 px-3 py-1 rounded text-xs font-mono">Score: <span id="gameScore" class="text-emerald-400 font-bold">0</span></div>
                 <div class="bg-black/40 border border-slate-800 px-3 py-1 rounded text-xs font-mono hidden md:block">Highscore: <span id="gameHighScore" class="text-yellow-400 font-bold">0</span></div>
             </div>
@@ -348,8 +374,24 @@
                 <div id="gameOverOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                     <h4 class="text-3xl md:text-5xl font-black font-orbitron text-red-500 tracking-wider mb-2 animate-bounce" data-i18n="gameOver">GAME OVER</h4>
                     <p class="text-slate-400 text-sm mb-6" data-i18n="gameOverDesc">Bạn đã chơi rất tốt! Hãy thử lại một lần nữa.</p>
-                    <button onclick="restartActiveGame()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 transition active:scale-95 shadow-lg shadow-blue-500/30">
-                        <i class="fa-solid fa-rotate-right"></i> <span data-i18n="playAgain">Chơi lại</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="restartActiveGame()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 transition active:scale-95 shadow-lg shadow-blue-500/30">
+                            <i class="fa-solid fa-rotate-right"></i> <span data-i18n="playAgain">Chơi lại</span>
+                        </button>
+                        <button onclick="showLeaderboard()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-trophy text-yellow-400"></i> Top 5
+                        </button>
+                    </div>
+                </div>
+                <div id="leaderboardPanel" class="hidden absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 z-30">
+                    <h4 class="text-lg font-bold font-orbitron text-cyan-400 mb-3"><i class="fa-solid fa-trophy mr-2"></i>TOP 5 TOÀN CẦU</h4>
+                    <div id="leaderboardList" class="space-y-1.5 text-sm font-mono text-slate-300 w-64 max-h-52 overflow-y-auto"></div>
+                    <button onclick="closeLeaderboard()" class="mt-4 bg-slate-700 hover:bg-slate-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition active:scale-95">Đóng</button>
+                </div>
+                <div id="pauseOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 z-20">
+                    <h4 class="text-3xl md:text-5xl font-black font-orbitron text-cyan-400 tracking-wider mb-6">⏸ TẠM DỪNG</h4>
+                    <button onclick="togglePause()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2 transition active:scale-95 shadow-lg shadow-cyan-500/30">
+                        <i class="fa-solid fa-play"></i> Tiếp tục
                     </button>
                 </div>
             </div>
@@ -428,7 +470,7 @@
             } catch(e) {}
         }
 
-        let activeGame = null, score = 0, isGameOver = false, keys = {};
+        let activeGame = null, score = 0, isGameOver = false, keys = {}, isPaused = false;
         let highScores = { space: 0, runner: 0, breaker: 0, coin: 0, reactor: 0 };
         window.addEventListener('keydown', e => { keys[e.code] = true; });
         window.addEventListener('keyup', e => { keys[e.code] = false; });
@@ -469,7 +511,10 @@
         }
 
         function startGame(gameKey) {
-            setupCanvasSize(); activeGame = gameKey; score = 0; isGameOver = false;
+            setupCanvasSize(); activeGame = gameKey; score = 0; isGameOver = false; isPaused = false;
+            document.getElementById('pauseOverlay').classList.add('hidden');
+            document.getElementById('leaderboardPanel').classList.add('hidden');
+            document.getElementById('btnPause').querySelector('i').className = 'fa-solid fa-pause text-xs';
             gameScoreText.innerText = 0; gameHighScoreText.innerText = highScores[gameKey] || 0;
             gameOverOverlay.classList.add('hidden'); 
             openCabinetWithGlitch();
@@ -485,6 +530,16 @@
         }
 
         function closeCabinet() { gameCabinet.style.display = 'none'; isGameOver = true; activeGame = null; gameIframe.style.display = 'none'; gameIframe.src = "about:blank"; document.body.style.overflow = "auto"; }
+        function togglePause() {
+            if (!activeGame || isGameOver) return;
+            isPaused = !isPaused;
+            document.getElementById('pauseOverlay').classList.toggle('hidden', !isPaused);
+            document.getElementById('btnPause').querySelector('i').className = isPaused ? 'fa-solid fa-play text-xs' : 'fa-solid fa-pause text-xs';
+            playSound('hit');
+        }
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && activeGame && !isGameOver && !isPaused) togglePause();
+        });
         function restartActiveGame() { startGame(activeGame); }
         let lives = 0;
         function loseLife() {
@@ -492,7 +547,18 @@
             playSound('hit');
             if (lives <= 0) setGameOver();
         }
-        function setGameOver() { isGameOver = true; gameOverOverlay.classList.remove('hidden'); playSound('explosion'); if (score > highScores[activeGame]) { highScores[activeGame] = score; gameHighScoreText.innerText = score; } }
+        function setGameOver() { isGameOver = true; gameOverOverlay.classList.remove('hidden'); playSound('explosion'); if (score > highScores[activeGame]) { highScores[activeGame] = score; gameHighScoreText.innerText = score; } if (window.submitScore) window.submitScore(activeGame, score); }
+
+        async function showLeaderboard() {
+            const panel = document.getElementById('leaderboardPanel');
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+            panel.classList.remove('hidden');
+            const scores = window.fetchLeaderboard ? await window.fetchLeaderboard(activeGame) : [];
+            if (!scores.length) { list.innerHTML = '<p class="text-slate-500">Chưa có điểm nào.</p>'; return; }
+            list.innerHTML = scores.map((s, i) => `<div class="flex items-center justify-between bg-slate-800/60 rounded-lg px-3 py-1.5"><span>${['🥇','🥈','🥉','4.','5.'][i]}</span><span class="text-emerald-400 font-bold">${s}</span></div>`).join('');
+        }
+        function closeLeaderboard() { document.getElementById('leaderboardPanel').classList.add('hidden'); }
 
         // ===== SHARED FX: screen shake + combo/streak system =====
         let shakeAmount = 0, shakeDecay = 0.85;
@@ -566,6 +632,7 @@
         }
         function spaceLoop() {
             if (isGameOver || activeGame !== 'space') return;
+            if (isPaused) { requestAnimationFrame(spaceLoop); return; }
             spacePulse += 0.08;
             if (keys['ArrowLeft'] || touchState.left) player.x = Math.max(player.width, player.x - player.speed);
             if (keys['ArrowRight'] || touchState.right) player.x = Math.min(canvas.width - player.width, player.x + player.speed);
@@ -677,6 +744,7 @@
 
         function runnerLoop() {
             if (isGameOver || activeGame !== 'runner') return;
+            if (isPaused) { requestAnimationFrame(runnerLoop); return; }
             runnerPulse += 0.05;
             
             if ((keys['Space'] || touchState.action) && runner.isGrounded) { 
@@ -815,6 +883,7 @@
         }
         function breakerLoop() {
             if (isGameOver || activeGame !== 'breaker') return;
+            if (isPaused) { requestAnimationFrame(breakerLoop); return; }
             if (keys['ArrowLeft'] || touchState.left) paddle.x = Math.max(paddle.width/2+20, paddle.x-paddle.speed);
             if (keys['ArrowRight'] || touchState.right) paddle.x = Math.min(canvas.width-paddle.width/2-20, paddle.x+paddle.speed);
             if ((keys['Space'] || touchState.action) && !ball.isLaunched) { ball.isLaunched=true; ball.vx=(Math.random()>0.5?6:-6); ball.vy=-7; }
@@ -947,6 +1016,7 @@
         }
         function reactorLoop() {
             if (isGameOver || activeGame !== 'reactor') { if (reactorHud) reactorHud.style.display = 'none'; return; }
+            if (isPaused) { requestAnimationFrame(reactorLoop); return; }
 
             reactorPulse += 0.06;
             reactorCoreRot += 0.012;
@@ -1108,6 +1178,7 @@
 
         function coinLoop() {
             if (isGameOver || activeGame !== 'coin') { if (starHud) starHud.style.display = 'none'; return; }
+            if (isPaused) { requestAnimationFrame(coinLoop); return; }
 
             if (keys['ArrowLeft'] || touchState.left) starShip.x = Math.max(starShip.width/2, starShip.x - starShip.speed);
             if (keys['ArrowRight'] || touchState.right) starShip.x = Math.min(canvas.width - starShip.width/2, starShip.x + starShip.speed);
@@ -1347,7 +1418,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, doc, getDoc, getDocs, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyALMfE9AfEaRGSgSp6IghU5Cu9uIs54-ac",
@@ -1465,7 +1536,7 @@
                 const displayDesc = (currentLang === 'en' && g.descriptionEn) ? g.descriptionEn : (g.description || '');
 
                 const thumbHTML = hasThumb
-                    ? `<img src="${g.thumbnail}" alt="${displayName}" class="game-thumb"
+                    ? `<img src="${g.thumbnail}" alt="${displayName}" class="game-thumb" loading="lazy" decoding="async"
                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                        <div class="absolute inset-0 items-center justify-center hidden">
                            <i class="fa-solid ${icon} text-5xl ${c.icon} z-10"></i>
@@ -1537,6 +1608,22 @@
             }
             setTimeout(() => { gameIframe.focus(); }, 100);
         };
+
+        // --- 4. LEADERBOARD TOÀN CẦU (theo từng game) ---
+        window.submitScore = async function(gameKey, scoreVal) {
+            if (!scoreVal || scoreVal <= 0) return;
+            try {
+                await addDoc(collection(db, "leaderboard_" + gameKey), { score: scoreVal, time: serverTimestamp() });
+            } catch (e) {}
+        };
+
+        window.fetchLeaderboard = async function(gameKey) {
+            try {
+                const q2 = query(collection(db, "leaderboard_" + gameKey), orderBy("score", "desc"), limit(5));
+                const snap = await getDocs(q2);
+                return snap.docs.map(d => d.data().score);
+            } catch (e) { return []; }
+        };
     </script>
 
     <script>
@@ -1576,8 +1663,11 @@
             }
             const fxGridSpacing = 64;
             let fxGridOffset = 0;
+            let fxPaused = false;
+            document.addEventListener('visibilitychange', () => { fxPaused = document.hidden; });
 
             function fxLoop() {
+                if (fxPaused) { requestAnimationFrame(fxLoop); return; }
                 fxCtx.fillStyle = '#030712';
                 fxCtx.fillRect(0, 0, fxCanvas.width, fxCanvas.height);
 

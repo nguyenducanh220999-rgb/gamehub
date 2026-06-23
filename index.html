@@ -87,13 +87,59 @@
             0% { opacity:0; transform: scale(0.88); }
             100% { opacity:1; transform: scale(1); }
         }
+
+        /* ===== HEADER GLOW UPGRADE ===== */
+        header { position: sticky; }
+        header::after {
+            content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+            background: linear-gradient(90deg, transparent, #3b82f6, #a855f7, #22d3ee, transparent);
+            background-size: 200% 100%;
+            animation: headerSweep 4s linear infinite;
+            opacity:0.85;
+        }
+        @keyframes headerSweep { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+        .glitch-logo { filter: drop-shadow(0 0 6px rgba(59,130,246,0.5)); }
+        .glitch-logo:hover { animation-duration: 1.2s; }
+        #soundToggle { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+        #soundToggle:hover { transform: scale(1.08); box-shadow: 0 0 14px rgba(34,211,238,0.5); border-color: rgba(34,211,238,0.7); }
+        #soundToggle:active { transform: scale(0.94); }
+        #soundToggle.sound-on i { color: #22d3ee; text-shadow: 0 0 8px rgba(34,211,238,0.8); }
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(34,211,238,0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(34,211,238,0); }
+            100% { box-shadow: 0 0 0 0 rgba(34,211,238,0); }
+        }
+        #soundToggle.sound-on { animation: pulseRing 2.5s infinite; }
+
+        /* ===== CARD HOVER/CLICK UPGRADE (nổi bật hơn) ===== */
+        #warmupGrid > div, #dynamicGameGrid > div {
+            transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, border-color .3s ease;
+            will-change: transform;
+        }
+        #warmupGrid > div:hover, #dynamicGameGrid > div:hover {
+            transform: translateY(-10px) scale(1.025);
+            box-shadow: 0 18px 40px -10px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        #warmupGrid > div:hover .fa-solid, #dynamicGameGrid > div:hover .fa-solid {
+            filter: drop-shadow(0 0 14px currentColor);
+        }
+        #warmupGrid > div:active, #dynamicGameGrid > div:active { transform: translateY(-4px) scale(0.985); }
+
+        .fx-ripple { background:rgba(255,255,255,0.6); box-shadow:0 0 20px rgba(255,255,255,0.5); }
+
+        .fx-click-flash {
+            position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:inherit;
+            background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 70%);
+            opacity:1; animation: fxClickFlash .45s ease-out forwards;
+        }
+        @keyframes fxClickFlash { to { opacity:0; transform: scale(1.3); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
     <canvas id="bgFxCanvas"></canvas>
     <div class="scanline-overlay"></div>
 
-    <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40 px-4 md:px-8 py-4 flex items-center justify-between shadow-md">
+    <header class="border-b border-slate-800 bg-slate-950/90 backdrop-blur sticky top-0 z-40 px-4 md:px-8 py-4 flex items-center justify-between shadow-md" style="position:sticky;">
         <div class="flex items-center gap-3">
             <h1 class="text-lg md:text-xl font-black font-orbitron tracking-widest text-white glitch-logo">GAM<span class="text-blue-500">HUB</span></h1>
         </div>
@@ -110,6 +156,9 @@
             <button id="langToggle" onclick="toggleLang()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-blue-500 px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition active:scale-95">
                 <i class="fa-solid fa-globe text-blue-400"></i>
                 <span id="langLabel">VN</span>
+            </button>
+            <button id="soundToggle" onclick="toggleSound()" class="sound-on flex items-center justify-center w-9 h-9 bg-slate-900 border border-slate-700 rounded-lg active:scale-90" title="Bật/tắt âm thanh">
+                <i class="fa-solid fa-volume-high text-sm"></i>
             </button>
         </div>
     </header>
@@ -1565,6 +1614,136 @@
             }
             fxLoop();
         })();
+    </script>
+
+    <script>
+        // ===== ÂM THANH: nhạc nền ambient + hiệu ứng hover/click =====
+        let soundEnabled = localStorage.getItem('gamhub_sound') !== 'off';
+        let ambientNodes = null, ambientStarted = false;
+
+        function ensureAudioCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function startAmbientMusic() {
+            if (ambientStarted || !soundEnabled) return;
+            try {
+                const ac = ensureAudioCtx();
+                const master = ac.createGain();
+                master.gain.value = 0.05;
+                master.connect(ac.destination);
+
+                const chord = [110, 138.6, 164.8, 220]; // A2, C#3, E3, A3 - pad nhẹ
+                const oscList = [];
+                chord.forEach((freq, i) => {
+                    const osc = ac.createOscillator();
+                    osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                    osc.frequency.value = freq;
+                    const lfo = ac.createOscillator();
+                    const lfoGain = ac.createGain();
+                    lfo.frequency.value = 0.05 + i * 0.02;
+                    lfoGain.gain.value = 2;
+                    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+                    const g = ac.createGain();
+                    g.gain.value = 0.18 / (i + 1);
+                    osc.connect(g); g.connect(master);
+                    osc.start(); lfo.start();
+                    oscList.push(osc, lfo);
+                });
+                ambientNodes = { master, oscList };
+                ambientStarted = true;
+            } catch (e) {}
+        }
+
+        function stopAmbientMusic() {
+            if (!ambientStarted || !ambientNodes) return;
+            try {
+                ambientNodes.master.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                setTimeout(() => {
+                    ambientNodes.oscList.forEach(n => { try { n.stop(); } catch(e){} });
+                    ambientStarted = false;
+                    ambientNodes = null;
+                }, 450);
+            } catch (e) {}
+        }
+
+        function playHoverBlip() {
+            if (!soundEnabled) return;
+            try {
+                const ac = ensureAudioCtx();
+                const now = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(700, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.08);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.connect(gain); gain.connect(ac.destination);
+                osc.start(now); osc.stop(now + 0.1);
+            } catch (e) {}
+        }
+
+        function updateSoundIcon() {
+            const btn = document.getElementById('soundToggle');
+            const icon = btn.querySelector('i');
+            if (soundEnabled) {
+                btn.classList.add('sound-on');
+                icon.className = 'fa-solid fa-volume-high text-sm';
+            } else {
+                btn.classList.remove('sound-on');
+                icon.className = 'fa-solid fa-volume-xmark text-sm text-slate-500';
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('gamhub_sound', soundEnabled ? 'on' : 'off');
+            updateSoundIcon();
+            if (soundEnabled) startAmbientMusic(); else stopAmbientMusic();
+            playHoverBlip();
+        }
+
+        // Khởi động nhạc nền sau tương tác đầu tiên của user (yêu cầu của browser)
+        function firstInteractionStart() {
+            if (soundEnabled) startAmbientMusic();
+            window.removeEventListener('click', firstInteractionStart);
+            window.removeEventListener('touchstart', firstInteractionStart);
+        }
+        window.addEventListener('click', firstInteractionStart, { once: true });
+        window.addEventListener('touchstart', firstInteractionStart, { once: true });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSoundIcon();
+
+            // Hover sound + click flash cho thẻ game (warmup + dynamic) và các nút bấm chính
+            function attachHoverSfx(el) {
+                if (el.dataset.sfxBound) return;
+                el.dataset.sfxBound = '1';
+                el.addEventListener('mouseenter', playHoverBlip);
+            }
+            function attachClickFlash(card) {
+                card.addEventListener('click', () => {
+                    const flash = document.createElement('div');
+                    flash.className = 'fx-click-flash';
+                    card.appendChild(flash);
+                    setTimeout(() => flash.remove(), 500);
+                });
+            }
+            function bindAllCards() {
+                document.querySelectorAll('#warmupGrid > div, #dynamicGameGrid > div').forEach(card => {
+                    attachHoverSfx(card);
+                    attachClickFlash(card);
+                });
+                document.querySelectorAll('button').forEach(attachHoverSfx);
+            }
+            bindAllCards();
+            // re-bind khi dynamicGameGrid được render lại từ Firestore
+            const observer = new MutationObserver(bindAllCards);
+            observer.observe(document.getElementById('dynamicGameGrid'), { childList: true });
+        });
     </script>
 
 </body>

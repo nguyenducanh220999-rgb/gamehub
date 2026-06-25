@@ -187,9 +187,60 @@
         .share-btn { width: 38px; height: 38px; border-radius: 9999px; display:flex; align-items:center; justify-content:center; transition: transform .15s ease; }
         .share-btn:hover { transform: scale(1.12); }
         .share-btn:active { transform: scale(0.92); }
+
+        /* ===== LIVE TICKER ===== */
+        #liveTickerTrack {
+            display: inline-flex;
+            padding-left: 1rem;
+            animation: tickerScroll 28s linear infinite;
+        }
+        @keyframes tickerScroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        #liveTicker:hover #liveTickerTrack { animation-play-state: paused; }
+
+        /* ===== HOVER PREVIEW CANVAS (thay icon tĩnh) ===== */
+        .preview-canvas {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            opacity: 0; transition: opacity .25s ease; z-index: 8; pointer-events: none;
+        }
+        .group:hover .preview-canvas { opacity: 1; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+    <div id="bootIntro" style="position:fixed; inset:0; z-index:999999; background:#020617; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;">
+        <div class="font-orbitron text-4xl md:text-6xl font-black text-white glitch-logo" style="animation-duration:0.8s;">GAM<span class="text-blue-500">HUB</span></div>
+        <div style="width:240px; height:6px; background:#1e293b; border-radius:4px; overflow:hidden;">
+            <div id="bootProgress" style="height:100%; width:0%; background:linear-gradient(90deg,#3b82f6,#22d3ee); transition:width .08s linear;"></div>
+        </div>
+        <p id="bootText" class="text-xs font-mono text-slate-500 tracking-widest">ĐANG KHỞI ĐỘNG ARCADE...</p>
+    </div>
+    <script>
+        (function () {
+            const boot = document.getElementById('bootIntro');
+            if (sessionStorage.getItem('gamhub_intro_shown')) {
+                boot.style.display = 'none';
+            } else {
+                sessionStorage.setItem('gamhub_intro_shown', '1');
+                const bar = document.getElementById('bootProgress');
+                let p = 0;
+                const iv = setInterval(() => {
+                    p += Math.random() * 18 + 8;
+                    if (p >= 100) {
+                        p = 100;
+                        clearInterval(iv);
+                        setTimeout(() => {
+                            boot.style.transition = 'opacity .4s ease';
+                            boot.style.opacity = '0';
+                            setTimeout(() => { boot.style.display = 'none'; }, 420);
+                        }, 200);
+                    }
+                    bar.style.width = p + '%';
+                }, 130);
+            }
+        })();
+    </script>
     <canvas id="bgFxCanvas"></canvas>
     <div class="scanline-overlay"></div>
 
@@ -206,6 +257,10 @@
                 <i class="fa-solid fa-globe text-blue-400 text-xs"></i>
                 <span class="text-slate-300"><span data-i18n="visitors">Visitors</span>: <span id="visitorCount" class="text-emerald-400 font-bold">...</span></span>
             </div>
+            <div class="hidden sm:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono" title="Số người đang online ngay lúc này">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span class="text-slate-300"><span data-i18n="onlineNow">Online</span>: <span id="onlineCount" class="text-cyan-400 font-bold">...</span></span>
+            </div>
             <span class="hidden md:inline bg-blue-950/80 border border-blue-800/60 text-blue-400 px-3.5 py-1.5 rounded-full text-xs font-semibold font-orbitron">gamhub.store</span>
             <button id="langToggle" onclick="toggleLang()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-blue-500 px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition active:scale-95">
                 <i class="fa-solid fa-globe text-blue-400"></i>
@@ -217,18 +272,24 @@
         </div>
     </header>
 
+    <div id="liveTicker" class="bg-slate-950/80 border-b border-slate-800/60 overflow-hidden whitespace-nowrap" style="height:30px;">
+        <div id="liveTickerTrack" class="flex items-center gap-10 text-xs font-mono text-slate-400" style="will-change: transform;">
+            <span class="flex items-center gap-2 px-2"><i class="fa-solid fa-satellite-dish text-emerald-400"></i> Đang kết nối hoạt động trực tiếp...</span>
+        </div>
+    </div>
+
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 flex flex-col gap-10">
 
         <section id="sectionCommunity" class="space-y-4">
             <h3 class="text-lg font-bold font-orbitron tracking-wide text-slate-300 flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded bg-blue-500"></span> <span data-i18n="communityBoard">💬 BẢNG TIN CỘNG ĐỒNG</span>
             </h3>
-            <div class="bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl border border-slate-800/80 p-5 md:p-6 space-y-5">
+            <div class="bg-gradient-to-br from-slate-900/80 to-slate-950/80 rounded-2xl border border-slate-800/80 p-4 md:p-5 space-y-3">
                 <div class="space-y-3">
                     <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-pen text-blue-400"></i> <span data-i18n="leaveMessage">Để lại lời nhắn ẩn danh</span>
                     </label>
-                    <textarea id="commentInput" data-i18n-placeholder="commentPlaceholder" placeholder="Viết gì đó... góp ý game, yêu cầu game mới 👋" maxlength="200" rows="3" class="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 resize-none outline-none transition"></textarea>
+                    <textarea id="commentInput" data-i18n-placeholder="commentPlaceholder" placeholder="Viết gì đó... góp ý game, yêu cầu game mới 👋" maxlength="200" rows="2" class="w-full bg-slate-900 border border-slate-700 focus:border-blue-500 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder-slate-500 resize-none outline-none transition"></textarea>
                     <div class="flex items-center justify-between">
                         <span id="charCount" class="text-xs text-slate-500 font-mono">0 / 200</span>
                         <button id="sendComment" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-lg text-sm flex items-center gap-2 transition active:scale-95 shadow-lg shadow-blue-500/20">
@@ -260,6 +321,7 @@
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-blue-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <canvas class="preview-canvas" data-preview-game="space"></canvas>
                             <i class="fa-solid fa-rocket text-5xl text-blue-500/80 group-hover:scale-110 group-hover:rotate-12 transition duration-300 z-10"></i>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
                             <div class="absolute w-1 h-1 bg-white rounded-full top-10 left-10 opacity-30 animate-pulse"></div>
@@ -281,6 +343,7 @@
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-purple-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <canvas class="preview-canvas" data-preview-game="runner"></canvas>
                             <i class="fa-solid fa-person-running text-5xl text-purple-500/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
                             <div class="absolute bottom-0 w-full h-10 border-t border-purple-900/50 flex flex-col gap-1 overflow-hidden opacity-30">
@@ -303,6 +366,7 @@
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-emerald-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <canvas class="preview-canvas" data-preview-game="breaker"></canvas>
                             <i class="fa-solid fa-border-all text-5xl text-emerald-500/80 group-hover:scale-110 transition duration-300 z-10"></i>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
                             <div class="absolute top-8 flex gap-1">
@@ -326,6 +390,7 @@
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-indigo-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <canvas class="preview-canvas" data-preview-game="coin"></canvas>
                             <i class="fa-solid fa-meteor text-5xl text-indigo-400/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
                             <div class="absolute top-6 left-12 w-3 h-3 rounded-full bg-yellow-400 opacity-50 animate-bounce"></div>
@@ -347,6 +412,7 @@
                 <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden group hover:border-red-500/50 transition duration-300 flex flex-col justify-between shadow-lg">
                     <div>
                         <div class="h-44 bg-slate-900/40 border-b border-slate-800 flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/10 transition">
+                            <canvas class="preview-canvas" data-preview-game="reactor"></canvas>
                             <i class="fa-solid fa-atom text-5xl text-red-400/80 group-hover:scale-110 group-hover:-translate-y-1 transition duration-300 z-10"></i>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent opacity-80"></div>
                             <div class="absolute top-6 left-10 w-3 h-3 rounded-full bg-red-500 opacity-50 animate-pulse"></div>
@@ -1410,6 +1476,7 @@
                 arcadePortal: "Arcade Portal",
                 serverOnline: "Server: ONLINE",
                 visitors: "Visitors",
+                onlineNow: "Đang online",
                 communityBoard: "💬 BẢNG TIN CỘNG ĐỒNG",
                 leaveMessage: "Để lại lời nhắn ẩn danh",
                 commentPlaceholder: "Viết gì đó... góp ý game, yêu cầu game mới 👋",
@@ -1452,6 +1519,7 @@
                 arcadePortal: "Arcade Portal",
                 serverOnline: "Server: ONLINE",
                 visitors: "Visitors",
+                onlineNow: "Online now",
                 communityBoard: "💬 COMMUNITY BOARD",
                 leaveMessage: "Leave an anonymous message",
                 commentPlaceholder: "Write something... feedback, request a new game 👋",
@@ -1501,6 +1569,8 @@
         }
 
         let currentLang = detectInitialLang();
+        window.i18n = i18n;
+        window.getLang = () => currentLang;
 
         function applyLang() {
             const dict = i18n[currentLang];
@@ -1516,6 +1586,7 @@
             document.documentElement.lang = currentLang;
             if (window.renderComments) window.renderComments();
             if (window.renderGames) window.renderGames();
+            if (window.renderTicker) window.renderTicker();
         }
 
         function toggleLang() {
@@ -1529,7 +1600,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, doc, getDoc, getDocs, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, doc, getDoc, getDocs, setDoc, increment, where, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyALMfE9AfEaRGSgSp6IghU5Cu9uIs54-ac",
@@ -1562,7 +1633,65 @@
             } catch(e) {}
         }
 
+        // --- 1b. ONLINE COUNTER (presence thật qua heartbeat Firestore) ---
+        const onlineCountEl = document.getElementById('onlineCount');
+        const PRESENCE_WINDOW_MS = 45000; // coi là "online" nếu heartbeat trong 45s gần nhất
+        const HEARTBEAT_INTERVAL_MS = 20000;
+        let mySessionId = sessionStorage.getItem('gamhub_session_id');
+        if (!mySessionId) {
+            mySessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+            sessionStorage.setItem('gamhub_session_id', mySessionId);
+        }
+        const myPresenceRef = doc(db, "presence", mySessionId);
+
+        async function sendHeartbeat() {
+            try { await setDoc(myPresenceRef, { lastSeen: serverTimestamp() }); } catch (e) {}
+        }
+        async function refreshOnlineCount() {
+            try {
+                const threshold = Timestamp.fromMillis(Date.now() - PRESENCE_WINDOW_MS);
+                const presenceQuery = query(collection(db, "presence"), where("lastSeen", ">", threshold));
+                const snap = await getDocs(presenceQuery);
+                onlineCountEl.textContent = Math.max(snap.size, 1).toLocaleString();
+            } catch (e) {}
+        }
+        await sendHeartbeat();
+        await refreshOnlineCount();
+        setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS);
+        setInterval(refreshOnlineCount, 15000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) sendHeartbeat(); });
+
         // --- 2. BÌNH LUẬN ---
+        const ANIMAL_NICKNAMES = [
+            { vi: 'Vịt Lùn',      en: 'Tiny Duck' },
+            { vi: 'Mèo Map',      en: 'Sneaky Cat' },
+            { vi: 'Cáo Lười',     en: 'Lazy Fox' },
+            { vi: 'Gấu Trúc Béo', en: 'Chubby Panda' },
+            { vi: 'Cú Đêm',       en: 'Night Owl' },
+            { vi: 'Sóc Nhanh',    en: 'Quick Squirrel' },
+            { vi: 'Rái Cá Vui',   en: 'Happy Otter' },
+            { vi: 'Hổ Con',       en: 'Baby Tiger' },
+            { vi: 'Thỏ Nhảy',     en: 'Hoppy Rabbit' },
+            { vi: 'Khủng Long Mini', en: 'Mini Dino' },
+            { vi: 'Cừu Bông',     en: 'Fluffy Sheep' },
+            { vi: 'Nhím Xù',      en: 'Spiky Hedgehog' }
+        ];
+        function getMyNickname() {
+            let idx = localStorage.getItem('gamhub_nick_idx');
+            let num = localStorage.getItem('gamhub_nick_num');
+            if (idx === null || num === null) {
+                idx = Math.floor(Math.random() * ANIMAL_NICKNAMES.length);
+                num = Math.floor(Math.random() * 900) + 100;
+                localStorage.setItem('gamhub_nick_idx', idx);
+                localStorage.setItem('gamhub_nick_num', num);
+            }
+            return { idx: parseInt(idx), num: parseInt(num) };
+        }
+        function formatNickname(idx, num, lang) {
+            const animal = ANIMAL_NICKNAMES[idx] || ANIMAL_NICKNAMES[0];
+            return `${animal[lang] || animal.vi} ${num}`;
+        }
+
         const input = document.getElementById('commentInput');
         const sendBtn = document.getElementById('sendComment');
         const charCount = document.getElementById('charCount');
@@ -1580,7 +1709,8 @@
             sendBtn.disabled = true;
             sendBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin text-xs"></i> ' + i18n[currentLang].sending;
             try {
-                await addDoc(collection(db, "comments"), { text: text, time: serverTimestamp() });
+                const nick = getMyNickname();
+                await addDoc(collection(db, "comments"), { text: text, time: serverTimestamp(), nickIdx: nick.idx, nickNum: nick.num });
                 input.value = '';
                 charCount.textContent = '0 / 200';
             } catch(e) { alert(i18n[currentLang].sendFail); }
@@ -1597,9 +1727,12 @@
             const localeMap = { vi: 'vi-VN', en: 'en-US' };
             commentsList.innerHTML = cachedComments.map(d => {
                 const time = d.time ? new Date(d.time.seconds * 1000).toLocaleString(localeMap[currentLang]) : i18n[currentLang].justNow;
+                const displayName = (typeof d.nickIdx === 'number' && typeof d.nickNum === 'number')
+                    ? formatNickname(d.nickIdx, d.nickNum, currentLang)
+                    : i18n[currentLang].anonymous;
                 return `<div class="bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3 space-y-1">
                     <p class="text-sm text-slate-200 leading-relaxed">${d.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
-                    <p class="text-xs text-slate-600"><i class="fa-solid fa-clock mr-1"></i>${time} · <span class="text-slate-500">${i18n[currentLang].anonymous}</span></p>
+                    <p class="text-xs text-slate-600"><i class="fa-solid fa-clock mr-1"></i>${time} · <span class="text-slate-500">${displayName}</span></p>
                 </div>`;
             }).join('');
         };
@@ -1723,10 +1856,16 @@
         };
 
         // --- 4. LEADERBOARD TOÀN CẦU (theo từng game) ---
+        const GAME_TITLE_KEYS = { space: 'spaceStormTitle', runner: 'cyberRunnerTitle', breaker: 'retroBreakerTitle', coin: 'coinCatcherTitle', reactor: 'reactorTitle' };
+
         window.submitScore = async function(gameKey, scoreVal) {
             if (!scoreVal || scoreVal <= 0) return;
             try {
                 await addDoc(collection(db, "leaderboard_" + gameKey), { score: scoreVal, time: serverTimestamp() });
+                const nick = getMyNickname();
+                await addDoc(collection(db, "activity"), {
+                    nickIdx: nick.idx, nickNum: nick.num, score: scoreVal, game: gameKey, time: serverTimestamp()
+                });
             } catch (e) {}
         };
 
@@ -1737,6 +1876,37 @@
                 return snap.docs.map(d => d.data().score);
             } catch (e) { return []; }
         };
+
+        // --- 5. LIVE ACTIVITY TICKER (dòng chữ chạy hiển thị hoạt động gần đây) ---
+        const liveTickerTrack = document.getElementById('liveTickerTrack');
+        let cachedActivity = [];
+        window.renderTicker = function() {
+            const lang = window.getLang ? window.getLang() : 'vi';
+            const dict = window.i18n ? window.i18n[lang] : null;
+            let items;
+            if (cachedActivity.length === 0) {
+                items = [lang === 'vi'
+                    ? '🎮 Chào mừng đến với GamHub! Hãy chơi game và lập kỷ lục của riêng bạn!'
+                    : '🎮 Welcome to GamHub! Play a game and set your own high score!'];
+            } else {
+                items = cachedActivity.map(a => {
+                    const animal = ANIMAL_NICKNAMES[a.nickIdx] || ANIMAL_NICKNAMES[0];
+                    const nickname = `${animal[lang] || animal.vi} ${a.nickNum}`;
+                    const gameTitle = (dict && dict[GAME_TITLE_KEYS[a.game]]) || a.game;
+                    return lang === 'vi'
+                        ? `🎮 ${nickname} vừa đạt ${a.score} điểm ở ${gameTitle}`
+                        : `🎮 ${nickname} just scored ${a.score} points in ${gameTitle}`;
+                });
+            }
+            const html = items.map(t => `<span class="flex items-center gap-2 px-2">${t.replace(/</g,'&lt;')}</span>`).join('<span class="text-slate-700 px-1">●</span>');
+            liveTickerTrack.innerHTML = html + '<span class="text-slate-700 px-1">●</span>' + html;
+        };
+
+        const qActivity = query(collection(db, "activity"), orderBy("time", "desc"), limit(12));
+        onSnapshot(qActivity, (snapshot) => {
+            cachedActivity = snapshot.docs.map(d => d.data());
+            window.renderTicker();
+        });
     </script>
 
     <script>
@@ -1816,6 +1986,101 @@
                 requestAnimationFrame(fxLoop);
             }
             fxLoop();
+        })();
+
+        // ===== HOVER PREVIEW: mini-animation thay icon tĩnh khi hover card =====
+        (function () {
+            const previewCanvases = document.querySelectorAll('.preview-canvas');
+            const previewStates = new Map();
+
+            function resizeCanvas(canvas) {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width || 300;
+                canvas.height = rect.height || 176;
+            }
+
+            function drawPreview(ctx, w, h, type, t) {
+                ctx.fillStyle = '#0b1220';
+                ctx.fillRect(0, 0, w, h);
+                if (type === 'space') {
+                    for (let i = 0; i < 6; i++) {
+                        const fy = (t * 2 + i * 40) % (h + 20) - 10;
+                        const fx = (i * 47 + 20) % w;
+                        ctx.fillStyle = '#ef4444';
+                        ctx.beginPath(); ctx.arc(fx, fy, 4, 0, Math.PI * 2); ctx.fill();
+                    }
+                    const shipX = w / 2 + Math.sin(t * 0.05) * w * 0.28;
+                    ctx.fillStyle = '#60a5fa';
+                    ctx.beginPath(); ctx.moveTo(shipX, h - 22); ctx.lineTo(shipX - 10, h - 8); ctx.lineTo(shipX + 10, h - 8); ctx.closePath(); ctx.fill();
+                } else if (type === 'runner') {
+                    ctx.strokeStyle = 'rgba(34,211,238,0.5)'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(0, h - 20); ctx.lineTo(w, h - 20); ctx.stroke();
+                    const bx = w - ((t * 3) % (w + 40));
+                    ctx.fillStyle = '#f43f5e'; ctx.fillRect(bx, h - 50, 16, 30);
+                    const jump = Math.abs(Math.sin(t * 0.08)) * 30;
+                    ctx.fillStyle = '#fbbf24'; ctx.fillRect(40, h - 40 - jump, 20, 20);
+                } else if (type === 'breaker') {
+                    const rows = 3, cols = 6, bw = w / cols;
+                    const palette = ['#f43f5e', '#fb923c', '#10b981'];
+                    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+                        ctx.fillStyle = palette[r];
+                        ctx.fillRect(c * bw + 2, 14 + r * 12, bw - 4, 9);
+                    }
+                    const bx = w / 2 + Math.sin(t * 0.1) * w * 0.32;
+                    const by = h - 30 - Math.abs(Math.cos(t * 0.1)) * 40;
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#10b981'; ctx.fillRect(bx - 18, h - 14, 36, 6);
+                } else if (type === 'coin') {
+                    for (let i = 0; i < 5; i++) {
+                        const fy = (t * 2.2 + i * 36) % (h + 20) - 10;
+                        const fx = (i * 53 + 30) % w;
+                        ctx.save(); ctx.shadowBlur = 6; ctx.shadowColor = '#fde047'; ctx.fillStyle = '#fde047';
+                        ctx.beginPath(); ctx.arc(fx, fy, 5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                    }
+                    const sx = w / 2 + Math.sin(t * 0.04) * w * 0.3;
+                    ctx.fillStyle = '#818cf8';
+                    ctx.fillRect(sx - 16, h - 18, 32, 10);
+                } else if (type === 'reactor') {
+                    const colors = ['#f87171', '#60a5fa', '#fde047', '#c084fc'];
+                    for (let i = 0; i < 4; i++) {
+                        const pulse = 6 + Math.sin(t * 0.1 + i) * 3;
+                        ctx.save(); ctx.shadowBlur = 10; ctx.shadowColor = colors[i]; ctx.fillStyle = colors[i];
+                        ctx.beginPath(); ctx.arc(w * (0.15 + i * 0.23), h / 2 + Math.sin(t * 0.07 + i * 2) * 20, pulse + 6, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                    }
+                }
+            }
+
+            function startPreview(canvas) {
+                if (previewStates.has(canvas)) return;
+                resizeCanvas(canvas);
+                const ctx = canvas.getContext('2d');
+                const type = canvas.dataset.previewGame;
+                const state = { t: 0, raf: null };
+                previewStates.set(canvas, state);
+                function loop() {
+                    if (!previewStates.has(canvas)) return;
+                    state.t += 1;
+                    drawPreview(ctx, canvas.width, canvas.height, type, state.t);
+                    state.raf = requestAnimationFrame(loop);
+                }
+                loop();
+            }
+            function stopPreview(canvas) {
+                const state = previewStates.get(canvas);
+                if (state && state.raf) cancelAnimationFrame(state.raf);
+                previewStates.delete(canvas);
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            previewCanvases.forEach(canvas => {
+                const card = canvas.closest('.group');
+                if (!card) return;
+                card.addEventListener('mouseenter', () => startPreview(canvas));
+                card.addEventListener('mouseleave', () => stopPreview(canvas));
+                card.addEventListener('touchstart', () => startPreview(canvas), { passive: true });
+            });
         })();
     </script>
 

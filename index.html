@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GamHub Portal - Chơi Game HTML5 Miễn Phí Trực Tuyến</title>
+    <title>GamHub Portal - Game HTML5 Free</title>
     <meta name="description" content="GamHub Portal - Chơi game HTML5 trực tuyến miễn phí ngay trên trình duyệt. Space Storm, Cyber Runner, Retro Breaker, Star Harvest, Reactor Overload và nhiều game mới mỗi tuần.">
     <meta name="keywords" content="game online, chơi game miễn phí, gamhub, html5 game, arcade, mini game">
     <meta name="theme-color" content="#030712">
@@ -15,11 +15,11 @@
     <!-- Open Graph / Social sharing -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="GamHub Portal">
-    <meta property="og:title" content="GamHub Portal - Chơi Game HTML5 Miễn Phí">
+    <meta property="og:title" content="GamHub Portal - Game HTML5 Free">
     <meta property="og:description" content="Chơi ngay các game arcade HTML5 miễn phí: Space Storm, Cyber Runner, Retro Breaker, Star Harvest, Reactor Overload và nhiều hơn nữa.">
     <meta property="og:url" content="https://gamhub.store/">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="GamHub Portal - Chơi Game HTML5 Miễn Phí">
+    <meta name="twitter:title" content="GamHub Portal - Game HTML5 Free">
     <meta name="twitter:description" content="Chơi ngay các game arcade HTML5 miễn phí ngay trên trình duyệt, không cần cài đặt.">
 
     <!-- Preconnect để tải nhanh hơn -->
@@ -250,10 +250,6 @@
             <h1 class="text-lg md:text-xl font-black font-orbitron tracking-widest text-white glitch-logo">GAM<span class="text-blue-500">HUB</span></h1>
         </div>
         <div class="flex items-center gap-2">
-            <div class="hidden sm:flex items-center gap-1 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span class="text-slate-300" data-i18n="serverOnline">Server: ONLINE</span>
-            </div>
             <div class="hidden sm:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono" title="Tổng lượt thiết bị unique ghé thăm">
                 <i class="fa-solid fa-globe text-blue-400 text-xs"></i>
                 <span class="text-slate-300"><span data-i18n="visitors">Visitors</span>: <span id="visitorCount" class="text-emerald-400 font-bold">...</span></span>
@@ -262,6 +258,10 @@
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
                 <span class="text-slate-300"><span data-i18n="onlineNow">Online</span>: <span id="onlineCount" class="text-cyan-400 font-bold">...</span></span>
             </div>
+            <div class="hidden sm:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono" title="Số ngày chơi liên tiếp">
+                <i class="fa-solid fa-fire text-orange-400"></i>
+                <span class="text-slate-300" id="streakBadge">...</span>
+            </div>
             <span class="hidden md:inline bg-blue-950/80 border border-blue-800/60 text-blue-400 px-3.5 py-1.5 rounded-full text-xs font-semibold font-orbitron">gamhub.store</span>
             <button id="langToggle" onclick="toggleLang()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-blue-500 px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition active:scale-95">
                 <i class="fa-solid fa-globe text-blue-400"></i>
@@ -269,6 +269,9 @@
             </button>
             <button id="soundToggle" onclick="toggleSound()" class="sound-on flex items-center justify-center w-9 h-9 bg-slate-900 border border-slate-700 rounded-lg active:scale-90" title="Bật/tắt âm thanh">
                 <i class="fa-solid fa-volume-high text-sm"></i>
+            </button>
+            <button id="notifyToggle" onclick="toggleNotify()" class="flex items-center justify-center w-9 h-9 bg-slate-900 border border-slate-700 rounded-lg active:scale-90" title="Bật thông báo khi có người phá kỷ lục của bạn (chỉ khi tab đang mở)">
+                <i class="fa-regular fa-bell text-sm text-slate-400"></i>
             </button>
         </div>
     </header>
@@ -528,7 +531,11 @@
                         <button onclick="shareScore('twitter')" class="share-btn bg-black border border-slate-600 text-white" title="Chia sẻ lên X/Twitter">
                             <i class="fa-brands fa-x-twitter text-sm"></i>
                         </button>
+                        <button onclick="generateScoreCard()" class="share-btn bg-gradient-to-br from-blue-500 to-purple-600 text-white" title="Tạo ảnh chia sẻ">
+                            <i class="fa-solid fa-image text-sm"></i>
+                        </button>
                     </div>
+                    <div id="relatedGames" class="mt-5 pt-4 border-t border-slate-800 w-full max-w-sm"></div>
                 </div>
                 <div id="leaderboardPanel" class="hidden absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 z-30">
                     <h4 class="text-lg font-bold font-orbitron text-cyan-400 mb-3"><i class="fa-solid fa-trophy mr-2"></i>TOP 5 TOÀN CẦU</h4>
@@ -634,6 +641,10 @@
 
         let activeGame = null, score = 0, isGameOver = false, keys = {}, isPaused = false;
         let highScores = { space: 0, runner: 0, breaker: 0, coin: 0, reactor: 0 };
+        try {
+            const savedHigh = JSON.parse(localStorage.getItem('gamhub_highscores') || '{}');
+            Object.keys(highScores).forEach(k => { if (typeof savedHigh[k] === 'number') highScores[k] = savedHigh[k]; });
+        } catch (e) {}
         window.addEventListener('keydown', e => { keys[e.code] = true; });
         window.addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -711,7 +722,33 @@
             playSound('hit');
             if (lives <= 0) setGameOver();
         }
-        function setGameOver() { isGameOver = true; gameOverOverlay.classList.remove('hidden'); playSound('explosion'); if (score > highScores[activeGame]) { highScores[activeGame] = score; gameHighScoreText.innerText = score; } if (window.submitScore) window.submitScore(activeGame, score); }
+        function setGameOver() {
+            isGameOver = true; gameOverOverlay.classList.remove('hidden'); playSound('explosion');
+            if (score > highScores[activeGame]) {
+                highScores[activeGame] = score; gameHighScoreText.innerText = score;
+                try { localStorage.setItem('gamhub_highscores', JSON.stringify(highScores)); } catch (e) {}
+            }
+            if (window.submitScore) window.submitScore(activeGame, score);
+            if (window.recordDailyStreak) window.recordDailyStreak();
+            renderRelatedGames();
+        }
+
+        function renderRelatedGames() {
+            const container = document.getElementById('relatedGames');
+            if (!container) return;
+            const titleMap = { space: 'spaceStormTitle', runner: 'cyberRunnerTitle', breaker: 'retroBreakerTitle', coin: 'coinCatcherTitle', reactor: 'reactorTitle' };
+            const iconMap = { space: 'fa-rocket', runner: 'fa-person-running', breaker: 'fa-border-all', coin: 'fa-meteor', reactor: 'fa-atom' };
+            const colorMap = { space: 'text-blue-400', runner: 'text-purple-400', breaker: 'text-emerald-400', coin: 'text-indigo-400', reactor: 'text-red-400' };
+            const others = Object.keys(titleMap).filter(k => k !== activeGame);
+            others.sort(() => Math.random() - 0.5);
+            const picks = others.slice(0, 2);
+            const label = currentLang === 'vi' ? 'Bạn cũng có thể thích:' : 'You might also like:';
+            container.innerHTML = `<p class="text-xs text-slate-500 mb-2">${label}</p>` + `<div class="flex items-center justify-center gap-3">` +
+                picks.map(k => `
+                    <button onclick="startGame('${k}')" class="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-200 transition active:scale-95">
+                        <i class="fa-solid ${iconMap[k]} ${colorMap[k]}"></i> ${i18n[currentLang][titleMap[k]] || k}
+                    </button>`).join('') + `</div>`;
+        }
 
         async function showLeaderboard() {
             const panel = document.getElementById('leaderboardPanel');
@@ -736,6 +773,71 @@
                 shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             }
             if (shareUrl) window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+        }
+
+        function generateScoreCard() {
+            const titleMap = { space: 'spaceStormTitle', runner: 'cyberRunnerTitle', breaker: 'retroBreakerTitle', coin: 'coinCatcherTitle', reactor: 'reactorTitle' };
+            const gameName = i18n[currentLang][titleMap[activeGame]] || 'GamHub';
+            const nickname = (window.getMyDisplayNickname ? window.getMyDisplayNickname(currentLang) : 'Player');
+
+            const card = document.createElement('canvas');
+            card.width = 800; card.height = 1000;
+            const cx = card.getContext('2d');
+
+            const bg = cx.createLinearGradient(0, 0, 0, card.height);
+            bg.addColorStop(0, '#0b1220'); bg.addColorStop(1, '#020617');
+            cx.fillStyle = bg; cx.fillRect(0, 0, card.width, card.height);
+
+            for (let i = 0; i < 60; i++) {
+                cx.fillStyle = `rgba(255,255,255,${Math.random() * 0.5})`;
+                cx.beginPath(); cx.arc(Math.random() * card.width, Math.random() * card.height * 0.5, Math.random() * 1.6, 0, Math.PI * 2); cx.fill();
+            }
+
+            cx.textAlign = 'center';
+            cx.shadowBlur = 18; cx.shadowColor = '#3b82f6';
+            cx.fillStyle = '#60a5fa';
+            cx.font = 'bold 56px Arial';
+            cx.fillText('GAMHUB', card.width / 2, 110);
+            cx.shadowBlur = 0;
+
+            cx.font = '24px Arial';
+            cx.fillStyle = '#94a3b8';
+            cx.fillText(gameName.toUpperCase(), card.width / 2, 170);
+
+            cx.font = 'bold 30px Arial';
+            cx.fillStyle = '#e2e8f0';
+            cx.fillText(currentLang === 'vi' ? 'ĐIỂM SỐ' : 'SCORE', card.width / 2, 360);
+
+            cx.save();
+            cx.shadowBlur = 30; cx.shadowColor = '#22d3ee';
+            cx.font = 'bold 160px Arial';
+            const grad = cx.createLinearGradient(0, 420, 0, 540);
+            grad.addColorStop(0, '#a5f3fc'); grad.addColorStop(1, '#3b82f6');
+            cx.fillStyle = grad;
+            cx.fillText(String(score), card.width / 2, 540);
+            cx.restore();
+
+            cx.font = 'bold 32px Arial';
+            cx.fillStyle = '#fbbf24';
+            cx.fillText(nickname, card.width / 2, 640);
+
+            cx.font = '20px Arial';
+            cx.fillStyle = '#64748b';
+            cx.fillText(currentLang === 'vi' ? 'Chơi ngay tại gamhub.store' : 'Play now at gamhub.store', card.width / 2, 920);
+
+            card.toBlob(async (blob) => {
+                const file = new File([blob], `gamhub-${activeGame}-${score}.png`, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({ files: [file], title: 'GamHub Portal', text: `Tôi vừa đạt ${score} điểm ở ${gameName} trên GamHub!` });
+                        return;
+                    } catch (e) {}
+                }
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `gamhub-${activeGame}-${score}.png`;
+                link.click();
+            }, 'image/png');
         }
 
         // ===== SHARED FX: screen shake + combo/streak system =====
@@ -1692,6 +1794,10 @@
             const animal = ANIMAL_NICKNAMES[idx] || ANIMAL_NICKNAMES[0];
             return `${animal[lang] || animal.vi} ${num}`;
         }
+        window.getMyDisplayNickname = function(lang) {
+            const nick = getMyNickname();
+            return formatNickname(nick.idx, nick.num, lang);
+        };
 
         const input = document.getElementById('commentInput');
         const sendBtn = document.getElementById('sendComment');
@@ -1904,9 +2010,38 @@
         };
 
         const qActivity = query(collection(db, "activity"), orderBy("time", "desc"), limit(12));
+        let activityFirstLoad = true;
+        function maybeNotifyRecordBeaten(a) {
+            try {
+                if (!('Notification' in window)) return;
+                if (Notification.permission !== 'granted') return;
+                if (localStorage.getItem('gamhub_notify_enabled') !== '1') return;
+                const myNick = getMyNickname();
+                if (a.nickIdx === myNick.idx && a.nickNum === myNick.num) return; // chính mình thì bỏ qua
+                const stored = JSON.parse(localStorage.getItem('gamhub_highscores') || '{}');
+                const myBest = stored[a.game] || 0;
+                if (a.score <= myBest) return;
+                const lang = window.getLang ? window.getLang() : 'vi';
+                const dict = window.i18n ? window.i18n[lang] : {};
+                const gameTitle = dict[GAME_TITLE_KEYS[a.game]] || a.game;
+                const animal = ANIMAL_NICKNAMES[a.nickIdx] || ANIMAL_NICKNAMES[0];
+                const nickname = `${animal[lang] || animal.vi} ${a.nickNum}`;
+                const title = lang === 'vi' ? '🏆 Có người vừa phá kỷ lục của bạn!' : '🏆 Someone just beat your record!';
+                const body = lang === 'vi'
+                    ? `${nickname} đạt ${a.score} điểm ở ${gameTitle} (kỷ lục của bạn: ${myBest})`
+                    : `${nickname} scored ${a.score} in ${gameTitle} (your record: ${myBest})`;
+                new Notification(title, { body });
+            } catch (e) {}
+        }
         onSnapshot(qActivity, (snapshot) => {
             cachedActivity = snapshot.docs.map(d => d.data());
             window.renderTicker();
+            if (!activityFirstLoad) {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') maybeNotifyRecordBeaten(change.doc.data());
+                });
+            }
+            activityFirstLoad = false;
         });
     </script>
 
@@ -2212,6 +2347,96 @@
             // re-bind khi dynamicGameGrid được render lại từ Firestore
             const observer = new MutationObserver(bindAllCards);
             observer.observe(document.getElementById('dynamicGameGrid'), { childList: true });
+        });
+    </script>
+
+    <script>
+        // ===== DAILY STREAK + TOAST + THÔNG BÁO (foreground only) =====
+        function showToast(message, emoji) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed; top:90px; right:16px; z-index:99998; background:rgba(15,23,42,0.95); border:1px solid rgba(59,130,246,0.5); color:#e2e8f0; padding:12px 18px; border-radius:10px; font-size:13px; font-family:inherit; box-shadow:0 8px 24px rgba(0,0,0,0.5); max-width:280px; display:flex; align-items:center; gap:8px; opacity:0; transform:translateX(20px); transition:opacity .3s ease, transform .3s ease;';
+            toast.innerHTML = `<span style="font-size:18px;">${emoji || '🔥'}</span><span>${message}</span>`;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(0)'; });
+            setTimeout(() => {
+                toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)';
+                setTimeout(() => toast.remove(), 350);
+            }, 4500);
+        }
+
+        function updateStreakBadge(count) {
+            const el = document.getElementById('streakBadge');
+            if (!el) return;
+            const lang = (window.getLang && window.getLang()) || 'vi';
+            el.textContent = (count || 0) + (lang === 'vi' ? ' ngày' : ' days');
+        }
+
+        function checkStreakMilestone(count) {
+            const milestones = [3, 7, 30];
+            if (!milestones.includes(count)) return;
+            const flagKey = 'gamhub_streak_celebrated_' + count;
+            if (localStorage.getItem(flagKey)) return;
+            localStorage.setItem(flagKey, '1');
+            const lang = (window.getLang && window.getLang()) || 'vi';
+            const msg = lang === 'vi'
+                ? `Chúc mừng! Bạn đã chơi liên tục ${count} ngày! 🏅`
+                : `Congrats! You've played ${count} days in a row! 🏅`;
+            showToast(msg, '🏅');
+        }
+
+        window.recordDailyStreak = function() {
+            const today = new Date().toDateString();
+            const last = localStorage.getItem('gamhub_streak_last');
+            if (last === today) { updateStreakBadge(parseInt(localStorage.getItem('gamhub_streak_count') || '0')); return; }
+            let count = parseInt(localStorage.getItem('gamhub_streak_count') || '0');
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            count = (last === yesterday) ? count + 1 : 1;
+            localStorage.setItem('gamhub_streak_last', today);
+            localStorage.setItem('gamhub_streak_count', String(count));
+            updateStreakBadge(count);
+            checkStreakMilestone(count);
+        };
+
+        // ===== THÔNG BÁO TRÌNH DUYỆT (chỉ hoạt động khi tab này đang mở) =====
+        function updateNotifyIcon() {
+            const btn = document.getElementById('notifyToggle');
+            if (!btn) return;
+            const icon = btn.querySelector('i');
+            const enabled = ('Notification' in window) && Notification.permission === 'granted' && localStorage.getItem('gamhub_notify_enabled') === '1';
+            if (enabled) {
+                icon.className = 'fa-solid fa-bell text-sm text-yellow-400';
+                btn.classList.add('sound-on');
+            } else {
+                icon.className = 'fa-regular fa-bell text-sm text-slate-400';
+                btn.classList.remove('sound-on');
+            }
+        }
+        function toggleNotify() {
+            if (!('Notification' in window)) { showToast('Trình duyệt không hỗ trợ thông báo.', '⚠️'); return; }
+            const lang = (window.getLang && window.getLang()) || 'vi';
+            if (Notification.permission === 'granted') {
+                const enabled = localStorage.getItem('gamhub_notify_enabled') === '1';
+                localStorage.setItem('gamhub_notify_enabled', enabled ? '0' : '1');
+                updateNotifyIcon();
+                showToast(!enabled
+                    ? (lang === 'vi' ? 'Đã bật thông báo phá kỷ lục (khi tab này mở).' : 'Record-beat notifications enabled (while this tab is open).')
+                    : (lang === 'vi' ? 'Đã tắt thông báo.' : 'Notifications disabled.'), '🔔');
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        localStorage.setItem('gamhub_notify_enabled', '1');
+                        showToast(lang === 'vi' ? 'Đã bật thông báo! (chỉ hoạt động khi tab này đang mở)' : 'Notifications enabled! (only while this tab is open)', '🔔');
+                    }
+                    updateNotifyIcon();
+                });
+            } else {
+                showToast(lang === 'vi' ? 'Bạn đã chặn thông báo cho trang này trong trình duyệt.' : 'You blocked notifications for this site in your browser.', '⚠️');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStreakBadge(parseInt(localStorage.getItem('gamhub_streak_count') || '0'));
+            updateNotifyIcon();
         });
     </script>
 
